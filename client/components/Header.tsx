@@ -3,12 +3,12 @@ import { Button } from "@/components/ui/button";
 
 export default function Header() {
   return (
-    <header className="fixed top-0 w-full bg-background/80 backdrop-blur-md border-b border-border z-50">
+    <header className="fixed top-0 w-full bg-gradient-to-b from-background/90 to-background/50 backdrop-blur-xl border-b border-primary/20 z-50 shadow-lg shadow-primary/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center">
+          <Link to="/" className="flex items-center gap-2 flex-shrink-0 group">
+            <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center shadow-lg shadow-primary/40 group-hover:shadow-primary/60 transition-shadow">
               <span className="text-sm font-bold text-primary-foreground">A</span>
             </div>
             <span className="text-xl font-bold text-foreground hidden sm:inline">AnimeHub</span>
@@ -18,37 +18,37 @@ export default function Header() {
           <nav className="hidden md:flex items-center gap-8">
             <Link
               to="/"
-              className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+              className="text-sm font-medium text-foreground hover:text-primary transition-colors duration-200"
             >
               Home
             </Link>
             <Link
               to="/"
-              className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+              className="text-sm font-medium text-foreground hover:text-primary transition-colors duration-200"
             >
               Anime
             </Link>
             <Link
               to="/"
-              className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+              className="text-sm font-medium text-foreground hover:text-primary transition-colors duration-200"
             >
               Schedule
             </Link>
             <Link
               to="/"
-              className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+              className="text-sm font-medium text-foreground hover:text-primary transition-colors duration-200"
             >
               Browse
             </Link>
             <Link
               to="/"
-              className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+              className="text-sm font-medium text-foreground hover:text-primary transition-colors duration-200"
             >
               My List
             </Link>
             <Link
               to="/"
-              className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+              className="text-sm font-medium text-foreground hover:text-primary transition-colors duration-200"
             >
               FAQ
             </Link>
@@ -57,7 +57,7 @@ export default function Header() {
           {/* Create Account Button */}
           <Button
             variant="outline"
-            className="text-foreground border-foreground/30 hover:border-primary hover:text-primary"
+            className="text-foreground border-primary/40 hover:border-primary hover:text-primary hover:bg-primary/10 transition-all duration-200"
           >
             Create Account
           </Button>
