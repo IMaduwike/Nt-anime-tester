@@ -24,21 +24,21 @@ export default function Header() {
               Home
             </Link>
             <Link
-              to="/"
+              to="/search"
               className="text-sm font-medium transition-colors duration-200"
               style={{ color: 'var(--text-main)' }}
             >
               Anime
             </Link>
             <Link
-              to="/"
+              to="/search"
               className="text-sm font-medium transition-colors duration-200"
               style={{ color: 'var(--text-main)' }}
             >
               Schedule
             </Link>
             <Link
-              to="/"
+              to="/search"
               className="text-sm font-medium transition-colors duration-200"
               style={{ color: 'var(--text-main)' }}
             >
