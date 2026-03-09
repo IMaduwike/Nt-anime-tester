@@ -56,6 +56,10 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        cyan: {
+          DEFAULT: "var(--accent-primary)",
+          glow: "var(--accent-glow)",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -4,16 +4,16 @@ import { Play, BookmarkPlus, TrendingUp } from "lucide-react";
 
 export default function Index() {
   return (
-    <div className="min-h-screen bg-background text-foreground relative overflow-hidden">
+    <div className="min-h-screen relative overflow-hidden" style={{ background: 'var(--bg-main)', color: 'var(--text-main)' }}>
       {/* Animated Space Background */}
       <div className="fixed inset-0 -z-50 space-bg opacity-40"></div>
 
       {/* Gradient Orbs - Galaxy Effect */}
       <div className="fixed inset-0 -z-40 overflow-hidden">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-primary/10 rounded-full filter blur-3xl animate-pulse"></div>
-        <div className="absolute top-1/3 right-0 w-80 h-80 bg-primary/5 rounded-full filter blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full filter blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute top-1/2 right-1/4 w-72 h-72 bg-primary/15 rounded-full filter blur-3xl opacity-20"></div>
+        <div className="absolute top-0 left-0 w-96 h-96 rounded-full filter blur-3xl animate-pulse" style={{ background: 'rgba(158, 240, 255, 0.15)' }}></div>
+        <div className="absolute top-1/3 right-0 w-80 h-80 rounded-full filter blur-3xl animate-pulse" style={{ background: 'rgba(158, 240, 255, 0.08)', animationDelay: '1s' }}></div>
+        <div className="absolute bottom-0 left-1/4 w-96 h-96 rounded-full filter blur-3xl animate-pulse" style={{ background: 'rgba(158, 240, 255, 0.1)', animationDelay: '2s' }}></div>
+        <div className="absolute top-1/2 right-1/4 w-72 h-72 rounded-full filter blur-3xl opacity-20" style={{ background: 'rgba(158, 240, 255, 0.2)' }}></div>
       </div>
 
       <Header />
@@ -23,21 +23,21 @@ export default function Index() {
         <div className="max-w-7xl mx-auto">
           {/* Subtle additional glow */}
           <div className="absolute inset-0 -z-10 pointer-events-none">
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full max-w-3xl bg-gradient-to-b from-primary/5 via-transparent to-transparent rounded-full filter blur-3xl"></div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full max-w-3xl rounded-full filter blur-3xl" style={{ background: 'rgba(158, 240, 255, 0.08)' }}></div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
             {/* Left Content */}
             <div className="space-y-8">
               <div className="space-y-4">
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
+                <h1 className="font-bold leading-tight" style={{ color: 'var(--text-main)' }}>
                   Dive into a World of
                   <br />
-                  <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                  <span style={{ color: 'var(--accent-primary)' }}>
                     Anime Excellence
                   </span>
                 </h1>
-                <p className="text-lg text-foreground/80 max-w-md">
+                <p className="text-lg max-w-md" style={{ color: 'var(--text-muted)' }}>
                   Explore the best anime, stream in HD, and keep track of your watchlist with ease.
                 </p>
               </div>
@@ -45,7 +45,7 @@ export default function Index() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button
                   size="lg"
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+                  className="btn btn-primary font-semibold"
                 >
                   <Play className="w-5 h-5" />
                   Browse Anime
@@ -53,7 +53,7 @@ export default function Index() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-foreground/30 text-foreground hover:border-primary hover:text-primary"
+                  className="btn btn-secondary"
                 >
                   Create Account
                 </Button>
@@ -61,48 +61,48 @@ export default function Index() {
 
               {/* Recent Activity */}
               <div className="pt-4 space-y-3">
-                <p className="text-sm text-foreground/60">Stay Eternally</p>
-                <div className="flex items-center gap-2 text-sm">
-                  <div className="w-2 h-2 bg-primary rounded-full"></div>
-                  <span className="text-foreground/70">Last updated 2 hours ago</span>
+                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Stay Eternally</p>
+                <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-muted)' }}>
+                  <div className="w-2 h-2 rounded-full" style={{ background: 'var(--accent-primary)' }}></div>
+                  <span>Last updated 2 hours ago</span>
                 </div>
               </div>
             </div>
 
             {/* Right - Featured Anime Card */}
-            <div className="relative h-96 lg:h-full group">
+            <div className="relative h-96 lg:h-full group hover-lift">
               {/* Glow Effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-transparent rounded-2xl blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 rounded-2xl blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ background: 'var(--accent-glow)' }}></div>
 
               {/* Card */}
-              <div className="relative h-full rounded-2xl border-2 border-primary/60 overflow-hidden bg-gradient-to-br from-card/70 to-card/30 backdrop-blur-xl p-6 flex flex-col justify-end shadow-2xl shadow-primary/30 hover:shadow-primary/50 transition-shadow duration-300">
+              <div className="glass relative h-full rounded-2xl overflow-hidden p-6 flex flex-col justify-end shadow-2xl transition-shadow duration-300" style={{ borderColor: 'var(--accent-primary)', borderWidth: '2px' }}>
                 {/* Featured Image Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-b from-primary/30 via-primary/10 to-card/50 rounded-2xl"></div>
+                <div className="absolute inset-0 rounded-2xl" style={{ background: `linear-gradient(to bottom, rgba(158, 240, 255, 0.15), rgba(158, 240, 255, 0.05), var(--bg-main))` }}></div>
 
                 {/* Featured Content */}
                 <div className="relative z-10 space-y-6">
                   <div className="space-y-2">
-                    <div className="text-4xl font-bold text-primary drop-shadow-lg">VINLAND SAGA</div>
+                    <div className="text-4xl font-bold drop-shadow-lg" style={{ color: 'var(--accent-primary)' }}>VINLAND SAGA</div>
                   </div>
 
                   <div className="flex flex-wrap gap-3">
-                    <span className="inline-block px-3 py-1 bg-primary/30 text-primary text-xs font-semibold rounded-lg border border-primary/50 backdrop-blur-sm">
+                    <span className="inline-block px-3 py-1 text-xs font-semibold rounded-lg backdrop-blur-sm" style={{ background: 'rgba(158, 240, 255, 0.2)', color: 'var(--accent-primary)', border: `1px solid var(--accent-primary)` }}>
                       TV-MA
                     </span>
-                    <div className="flex items-center gap-2 text-sm text-foreground/80 bg-white/10 px-3 py-1 rounded-lg backdrop-blur-sm">
+                    <div className="flex items-center gap-2 text-sm px-3 py-1 rounded-lg backdrop-blur-sm" style={{ background: 'var(--bg-surface)', color: 'var(--text-muted)' }}>
                       <span>24 Episodes</span>
                     </div>
-                    <div className="flex items-center gap-1 text-yellow-400 bg-white/10 px-3 py-1 rounded-lg backdrop-blur-sm">
+                    <div className="flex items-center gap-1 px-3 py-1 rounded-lg backdrop-blur-sm" style={{ background: 'var(--bg-surface)', color: '#fbbf24' }}>
                       <span>★</span>
                       <span>9.0</span>
                     </div>
                   </div>
 
-                  <p className="text-foreground/90 text-sm leading-relaxed max-w-xs">
+                  <p className="text-sm leading-relaxed max-w-xs" style={{ color: 'var(--text-muted)' }}>
                     Follow Thorfinn's epic journey of revenge and redemption in this masterpiece of anime storytelling.
                   </p>
 
-                  <Button className="w-full sm:w-auto bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-semibold shadow-lg shadow-primary/50 hover:shadow-xl hover:shadow-primary/70 transition-shadow duration-300">
+                  <Button className="w-full sm:w-auto btn btn-primary font-semibold shadow-lg transition-shadow duration-300" style={{ boxShadow: '0 0 30px var(--accent-glow)' }}>
                     Continue Episode 3
                   </Button>
                 </div>
@@ -116,52 +116,52 @@ export default function Index() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 relative">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl sm:text-5xl font-bold mb-6">
+            <h2 className="font-bold mb-6" style={{ color: 'var(--text-main)' }}>
               Experience Anime Like Never Before
             </h2>
-            <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
+            <p className="text-lg max-w-2xl mx-auto" style={{ color: 'var(--text-muted)' }}>
               Immerse yourself in a premium streaming experience where every episode is just a click away.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Stream in HD Card */}
-            <div className="group relative rounded-xl border border-primary/50 bg-gradient-to-br from-card/70 to-card/30 backdrop-blur-xl p-8 hover:border-primary/80 transition-all duration-300 overflow-hidden shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/40">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl"></div>
+            <div className="glass group relative rounded-xl p-8 hover-lift overflow-hidden" style={{ borderColor: 'var(--border-soft)' }}>
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl" style={{ background: 'var(--accent-glow)' }}></div>
               <div className="relative z-10">
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary/40 to-primary/20 flex items-center justify-center mb-6 group-hover:shadow-lg group-hover:shadow-primary/30 transition-shadow">
-                  <Play className="w-6 h-6 text-primary" />
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-6 group-hover:shadow-lg transition-shadow" style={{ background: 'rgba(158, 240, 255, 0.15)', color: 'var(--accent-primary)' }}>
+                  <Play className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-bold mb-4">Stream in HD</h3>
-                <p className="text-foreground/70">
+                <h3 className="text-xl font-bold mb-4" style={{ color: 'var(--text-main)' }}>Stream in HD</h3>
+                <p style={{ color: 'var(--text-muted)' }}>
                   Watch your favorite anime in stunning high definition, ad-free.
                 </p>
               </div>
             </div>
 
             {/* Track Your Watchlist Card */}
-            <div className="group relative rounded-xl border border-primary/50 bg-gradient-to-br from-card/70 to-card/30 backdrop-blur-xl p-8 hover:border-primary/80 transition-all duration-300 overflow-hidden shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/40">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl"></div>
+            <div className="glass group relative rounded-xl p-8 hover-lift overflow-hidden" style={{ borderColor: 'var(--border-soft)' }}>
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl" style={{ background: 'var(--accent-glow)' }}></div>
               <div className="relative z-10">
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary/40 to-primary/20 flex items-center justify-center mb-6 group-hover:shadow-lg group-hover:shadow-primary/30 transition-shadow">
-                  <BookmarkPlus className="w-6 h-6 text-primary" />
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-6 group-hover:shadow-lg transition-shadow" style={{ background: 'rgba(158, 240, 255, 0.15)', color: 'var(--accent-primary)' }}>
+                  <BookmarkPlus className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-bold mb-4">Track Your Watchlist</h3>
-                <p className="text-foreground/70">
+                <h3 className="text-xl font-bold mb-4" style={{ color: 'var(--text-main)' }}>Track Your Watchlist</h3>
+                <p style={{ color: 'var(--text-muted)' }}>
                   Keep your watchlist organized and track your progress effortlessly.
                 </p>
               </div>
             </div>
 
             {/* Discover Trending Card */}
-            <div className="group relative rounded-xl border border-primary/50 bg-gradient-to-br from-card/70 to-card/30 backdrop-blur-xl p-8 hover:border-primary/80 transition-all duration-300 overflow-hidden shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/40">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl"></div>
+            <div className="glass group relative rounded-xl p-8 hover-lift overflow-hidden" style={{ borderColor: 'var(--border-soft)' }}>
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl" style={{ background: 'var(--accent-glow)' }}></div>
               <div className="relative z-10">
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary/40 to-primary/20 flex items-center justify-center mb-6 group-hover:shadow-lg group-hover:shadow-primary/30 transition-shadow">
-                  <TrendingUp className="w-6 h-6 text-primary" />
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center mb-6 group-hover:shadow-lg transition-shadow" style={{ background: 'rgba(158, 240, 255, 0.15)', color: 'var(--accent-primary)' }}>
+                  <TrendingUp className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-bold mb-4">Discover Trending Shows</h3>
-                <p className="text-foreground/70">
+                <h3 className="text-xl font-bold mb-4" style={{ color: 'var(--text-main)' }}>Discover Trending Shows</h3>
+                <p style={{ color: 'var(--text-muted)' }}>
                   Stay up-to-date with the hottest anime series selected just for you.
                 </p>
               </div>
@@ -174,46 +174,46 @@ export default function Index() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 relative">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl sm:text-5xl font-bold mb-6">
+            <h2 className="font-bold mb-6" style={{ color: 'var(--text-main)' }}>
               Join Thousands of Anime Fans
             </h2>
-            <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
+            <p className="text-lg max-w-2xl mx-auto" style={{ color: 'var(--text-muted)' }}>
               Our users love the streaming experience we provide.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
             {/* Stat 1 */}
-            <div className="group relative rounded-xl border border-primary/50 bg-gradient-to-br from-card/70 to-card/30 backdrop-blur-xl p-8 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/40 transition-all overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl"></div>
+            <div className="glass group relative rounded-xl p-8 hover-lift overflow-hidden" style={{ borderColor: 'var(--border-soft)' }}>
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl" style={{ background: 'var(--accent-glow)' }}></div>
               <div className="relative z-10">
-                <div className="text-5xl sm:text-6xl font-bold text-primary mb-4 drop-shadow-lg">98%</div>
-                <h3 className="text-xl font-bold mb-3">User Satisfaction</h3>
-                <p className="text-foreground/70">
+                <div className="text-5xl sm:text-6xl font-bold mb-4 drop-shadow-lg" style={{ color: 'var(--accent-primary)' }}>98%</div>
+                <h3 className="text-xl font-bold mb-3" style={{ color: 'var(--text-main)' }}>User Satisfaction</h3>
+                <p style={{ color: 'var(--text-muted)' }}>
                   Our users love the streaming experience we provide.
                 </p>
               </div>
             </div>
 
             {/* Stat 2 */}
-            <div className="group relative rounded-xl border border-primary/50 bg-gradient-to-br from-card/70 to-card/30 backdrop-blur-xl p-8 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/40 transition-all overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl"></div>
+            <div className="glass group relative rounded-xl p-8 hover-lift overflow-hidden" style={{ borderColor: 'var(--border-soft)' }}>
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl" style={{ background: 'var(--accent-glow)' }}></div>
               <div className="relative z-10">
-                <div className="text-5xl sm:text-6xl font-bold text-primary mb-4 drop-shadow-lg">1M+</div>
-                <h3 className="text-xl font-bold mb-3">Registered Users</h3>
-                <p className="text-foreground/70">
+                <div className="text-5xl sm:text-6xl font-bold mb-4 drop-shadow-lg" style={{ color: 'var(--accent-primary)' }}>1M+</div>
+                <h3 className="text-xl font-bold mb-3" style={{ color: 'var(--text-main)' }}>Registered Users</h3>
+                <p style={{ color: 'var(--text-muted)' }}>
                   Join a growing community of anime enthusiasts.
                 </p>
               </div>
             </div>
 
             {/* Stat 3 */}
-            <div className="group relative rounded-xl border border-primary/50 bg-gradient-to-br from-card/70 to-card/30 backdrop-blur-xl p-8 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/40 transition-all overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl"></div>
+            <div className="glass group relative rounded-xl p-8 hover-lift overflow-hidden" style={{ borderColor: 'var(--border-soft)' }}>
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl" style={{ background: 'var(--accent-glow)' }}></div>
               <div className="relative z-10">
-                <div className="text-5xl sm:text-6xl font-bold text-primary mb-4 drop-shadow-lg">500K+</div>
-                <h3 className="text-xl font-bold mb-3">Episodes Watched Daily</h3>
-                <p className="text-foreground/70">
+                <div className="text-5xl sm:text-6xl font-bold mb-4 drop-shadow-lg" style={{ color: 'var(--accent-primary)' }}>500K+</div>
+                <h3 className="text-xl font-bold mb-3" style={{ color: 'var(--text-main)' }}>Episodes Watched Daily</h3>
+                <p style={{ color: 'var(--text-muted)' }}>
                   Enjoy a vast library of episodes, updated regularly.
                 </p>
               </div>
@@ -221,10 +221,10 @@ export default function Index() {
           </div>
 
           {/* Chart Placeholder */}
-          <div className="group relative rounded-xl border border-primary/50 bg-gradient-to-br from-card/70 to-card/30 backdrop-blur-xl p-8 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/40 overflow-hidden transition-shadow duration-300">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl"></div>
+          <div className="glass group relative rounded-xl p-8 hover-lift overflow-hidden transition-shadow duration-300" style={{ borderColor: 'var(--border-soft)' }}>
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl" style={{ background: 'var(--accent-glow)' }}></div>
             <div className="relative z-10">
-              <h3 className="text-xl font-bold mb-8">Top Trending Anime</h3>
+              <h3 className="text-xl font-bold mb-8" style={{ color: 'var(--text-main)' }}>Top Trending Anime</h3>
               <div className="flex items-end gap-4 h-48">
                 {[
                   { name: "Naruto", value: 85 },
@@ -234,8 +234,8 @@ export default function Index() {
                   { name: "Trappers", value: 62 },
                 ].map((anime) => (
                   <div key={anime.name} className="flex-1 flex flex-col items-center group/bar">
-                    <div className="w-full bg-gradient-to-t from-primary via-primary/70 to-primary/40 rounded-t-lg transition-all hover:from-primary/90 hover:via-primary/80 hover:to-primary/50 shadow-lg shadow-primary/40 group-hover/bar:shadow-xl group-hover/bar:shadow-primary/60" style={{ height: `${anime.value * 2}px` }}></div>
-                    <span className="text-xs text-foreground/60 mt-4 text-center">{anime.name}</span>
+                    <div className="w-full rounded-t-lg transition-all group-hover/bar:shadow-xl" style={{ height: `${anime.value * 2}px`, background: `linear-gradient(to top, var(--accent-primary), rgba(158, 240, 255, 0.7), rgba(158, 240, 255, 0.4))` }}></div>
+                    <span className="text-xs mt-4 text-center" style={{ color: 'var(--text-muted)' }}>{anime.name}</span>
                   </div>
                 ))}
               </div>
@@ -248,19 +248,20 @@ export default function Index() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 relative">
         {/* Background glow */}
         <div className="absolute inset-0 -z-10 flex items-center justify-center overflow-hidden">
-          <div className="w-96 h-96 bg-primary/20 rounded-full filter blur-3xl"></div>
+          <div className="w-96 h-96 rounded-full filter blur-3xl" style={{ background: 'var(--accent-glow)' }}></div>
         </div>
 
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl sm:text-5xl font-bold mb-6">
+          <h2 className="font-bold mb-6" style={{ color: 'var(--text-main)' }}>
             Begin Your Anime Adventure Today
           </h2>
-          <p className="text-lg text-foreground/70 mb-10">
+          <p className="text-lg mb-10" style={{ color: 'var(--text-muted)' }}>
             Create your free account now and start streaming the top anime series.
           </p>
           <Button
             size="lg"
-            className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-semibold shadow-lg shadow-primary/50 hover:shadow-xl hover:shadow-primary/70 transition-shadow duration-300"
+            className="btn btn-primary font-semibold shadow-lg transition-shadow duration-300"
+            style={{ boxShadow: '0 0 30px var(--accent-glow)' }}
           >
             Create Account
           </Button>
@@ -268,48 +269,48 @@ export default function Index() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-foreground/10 py-12 px-4 sm:px-6 lg:px-8">
+      <footer className="py-12 px-4 sm:px-6 lg:px-8" style={{ borderTop: `1px solid var(--border-soft)` }}>
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
             <div>
-              <h4 className="font-bold mb-4">Product</h4>
-              <ul className="space-y-2 text-foreground/70 text-sm">
-                <li><a href="#" className="hover:text-primary transition-colors">Features</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Pricing</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Security</a></li>
+              <h4 className="font-bold mb-4" style={{ color: 'var(--text-main)' }}>Product</h4>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#" className="transition-colors" style={{ color: 'var(--text-muted)' }}>Features</a></li>
+                <li><a href="#" className="transition-colors" style={{ color: 'var(--text-muted)' }}>Pricing</a></li>
+                <li><a href="#" className="transition-colors" style={{ color: 'var(--text-muted)' }}>Security</a></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-4">Company</h4>
-              <ul className="space-y-2 text-foreground/70 text-sm">
-                <li><a href="#" className="hover:text-primary transition-colors">About</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Careers</a></li>
+              <h4 className="font-bold mb-4" style={{ color: 'var(--text-main)' }}>Company</h4>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#" className="transition-colors" style={{ color: 'var(--text-muted)' }}>About</a></li>
+                <li><a href="#" className="transition-colors" style={{ color: 'var(--text-muted)' }}>Blog</a></li>
+                <li><a href="#" className="transition-colors" style={{ color: 'var(--text-muted)' }}>Careers</a></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-4">Legal</h4>
-              <ul className="space-y-2 text-foreground/70 text-sm">
-                <li><a href="#" className="hover:text-primary transition-colors">Terms</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Privacy</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Contact</a></li>
+              <h4 className="font-bold mb-4" style={{ color: 'var(--text-main)' }}>Legal</h4>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#" className="transition-colors" style={{ color: 'var(--text-muted)' }}>Terms</a></li>
+                <li><a href="#" className="transition-colors" style={{ color: 'var(--text-muted)' }}>Privacy</a></li>
+                <li><a href="#" className="transition-colors" style={{ color: 'var(--text-muted)' }}>Contact</a></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-4">Follow</h4>
-              <ul className="space-y-2 text-foreground/70 text-sm">
-                <li><a href="#" className="hover:text-primary transition-colors">Twitter</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Discord</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Instagram</a></li>
+              <h4 className="font-bold mb-4" style={{ color: 'var(--text-main)' }}>Follow</h4>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#" className="transition-colors" style={{ color: 'var(--text-muted)' }}>Twitter</a></li>
+                <li><a href="#" className="transition-colors" style={{ color: 'var(--text-muted)' }}>Discord</a></li>
+                <li><a href="#" className="transition-colors" style={{ color: 'var(--text-muted)' }}>Instagram</a></li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-foreground/10 pt-8 flex flex-col sm:flex-row justify-between items-center text-foreground/60 text-sm">
+          <div className="pt-8 flex flex-col sm:flex-row justify-between items-center text-sm" style={{ borderTop: `1px solid var(--border-soft)`, color: 'var(--text-muted)' }}>
             <p>&copy; 2024 AnimeHub. All rights reserved.</p>
             <div className="flex gap-6 mt-4 sm:mt-0">
-              <a href="#" className="hover:text-primary transition-colors">Terms</a>
-              <a href="#" className="hover:text-primary transition-colors">Privacy</a>
-              <a href="#" className="hover:text-primary transition-colors">Contact</a>
+              <a href="#" className="transition-colors">Terms</a>
+              <a href="#" className="transition-colors">Privacy</a>
+              <a href="#" className="transition-colors">Contact</a>
             </div>
           </div>
         </div>
