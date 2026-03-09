@@ -24,11 +24,13 @@ export default function Search() {
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(!!searchParams.get("q"));
 
+  const API_BASE_URL = "https://nt-anime-api.onrender.com";
+
   // Fetch trending anime on mount
   useEffect(() => {
     const fetchTrending = async () => {
       try {
-        const response = await fetch("https://nt-animes.onrender.com/trending");
+        const response = await fetch(`${API_BASE_URL}/trending`);
         const data = await response.json();
         setTrending(data.results || []);
       } catch (error) {
@@ -57,7 +59,7 @@ export default function Search() {
     setLoading(true);
     try {
       const response = await fetch(
-        `https://nt-animes.onrender.com/search?keyword=${encodeURIComponent(query)}`
+        `${API_BASE_URL}/search?keyword=${encodeURIComponent(query)}`
       );
       const data = await response.json();
       setResults(data.results || []);
