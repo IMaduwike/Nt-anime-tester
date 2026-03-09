@@ -1,0 +1,239 @@
+Neon Anime API — Documentation
+
+Base URL
+
+https://nt-animes.onrender.com
+
+
+⸻
+
+1. Search Anime
+
+Search for anime by title.
+
+Endpoint
+
+GET /search
+
+Query Parameters
+
+Parameter	Required	Description
+keyword	Yes	Anime title
+
+Example
+
+https://nt-animes.onrender.com/search?keyword=naruto
+
+Response
+
+{
+  "keyword": "naruto",
+    "results": [
+        {
+              "title": "Naruto",
+                    "url": "naruto",
+                          "thumbnail": "https://image-url.jpg",
+                                "episodes": {
+                                        "sub": 220,
+                                                "dub": 220,
+                                                        "total": 220
+                                                              },
+                                                                    "type": "TV"
+                                                                        }
+                                                                          ]
+                                                                          }
+
+                                                                          url is the anime slug used in other endpoints.
+
+                                                                          ⸻
+
+                                                                          2. Trending Anime
+
+                                                                          Returns currently trending anime.
+
+                                                                          Endpoint
+
+                                                                          GET /trending
+
+                                                                          Example
+
+                                                                          https://nt-animes.onrender.com/trending
+
+                                                                          Response
+
+                                                                          {
+                                                                            "results": [
+                                                                                {
+                                                                                      "title": "Solo Leveling",
+                                                                                            "url": "solo-leveling",
+                                                                                                  "thumbnail": "https://image-url.jpg",
+                                                                                                        "episodes": {
+                                                                                                                "sub": 12,
+                                                                                                                        "dub": 12,
+                                                                                                                                "total": 12
+                                                                                                                                      },
+                                                                                                                                            "type": "TV"
+                                                                                                                                                }
+                                                                                                                                                  ]
+                                                                                                                                                  }
+
+
+                                                                                                                                                  ⸻
+
+                                                                                                                                                  3. Anime Metadata
+
+                                                                                                                                                  Returns full anime information.
+
+                                                                                                                                                  Endpoint
+
+                                                                                                                                                  GET /metadata
+
+                                                                                                                                                  Query Parameters
+
+                                                                                                                                                  Parameter	Required	Description
+                                                                                                                                                  anime	Yes	Anime slug
+
+                                                                                                                                                  Example
+
+                                                                                                                                                  https://nt-animes.onrender.com/metadata?anime=naruto
+
+                                                                                                                                                  Response
+
+                                                                                                                                                  {
+                                                                                                                                                    "title": "Naruto",
+                                                                                                                                                      "rating": "8.3",
+                                                                                                                                                        "quality": "HD",
+                                                                                                                                                          "has_sub": true,
+                                                                                                                                                            "has_dub": true,
+                                                                                                                                                              "description": "A young ninja strives to become Hokage.",
+                                                                                                                                                                "type": "TV",
+                                                                                                                                                                  "source": "Manga",
+                                                                                                                                                                    "premiered": "Fall 2002",
+                                                                                                                                                                      "date_aired": "Oct 2002 - Feb 2007",
+                                                                                                                                                                        "broadcast": "Thursdays",
+                                                                                                                                                                          "status": "Finished Airing",
+                                                                                                                                                                            "genres": ["Action", "Adventure"],
+                                                                                                                                                                              "mal_rating": "8.3",
+                                                                                                                                                                                "duration": "23 min",
+                                                                                                                                                                                  "total_episodes": "220",
+                                                                                                                                                                                    "studios": ["Studio Pierrot"],
+                                                                                                                                                                                      "producers": ["TV Tokyo"],
+                                                                                                                                                                                        "thumbnail": "https://image-url.jpg"
+                                                                                                                                                                                        }
+
+
+                                                                                                                                                                                        ⸻
+
+                                                                                                                                                                                        4. Watch Episode (Streaming)
+
+                                                                                                                                                                                        Streams anime video.
+
+                                                                                                                                                                                        Endpoint
+
+                                                                                                                                                                                        GET /watch/:anime/:episode
+
+                                                                                                                                                                                        Parameters
+
+                                                                                                                                                                                        Parameter	Description
+                                                                                                                                                                                        anime	Anime slug
+                                                                                                                                                                                        episode	Episode number
+
+                                                                                                                                                                                        Query
+
+                                                                                                                                                                                        Parameter	Values
+                                                                                                                                                                                        server	sub / dub
+
+                                                                                                                                                                                        Examples
+
+                                                                                                                                                                                        Sub:
+
+                                                                                                                                                                                        https://nt-animes.onrender.com/watch/naruto/1
+
+                                                                                                                                                                                        Dub:
+
+                                                                                                                                                                                        https://nt-animes.onrender.com/watch/naruto/1?server=dub
+
+                                                                                                                                                                                        HTML Player Example
+
+                                                                                                                                                                                        <video controls width="100%">
+                                                                                                                                                                                          <source src="https://nt-animes.onrender.com/watch/naruto/1" type="video/mp4">
+                                                                                                                                                                                          </video>
+
+
+                                                                                                                                                                                          ⸻
+
+                                                                                                                                                                                          5. Download Episode
+
+                                                                                                                                                                                          Downloads episode as MP4.
+
+                                                                                                                                                                                          Endpoint
+
+                                                                                                                                                                                          GET /download/:anime/:episode
+
+                                                                                                                                                                                          Query
+
+                                                                                                                                                                                          Parameter	Values
+                                                                                                                                                                                          server	sub / dub
+
+                                                                                                                                                                                          Examples
+
+                                                                                                                                                                                          Sub:
+
+                                                                                                                                                                                          https://nt-animes.onrender.com/download/naruto/1
+
+                                                                                                                                                                                          Dub:
+
+                                                                                                                                                                                          https://nt-animes.onrender.com/download/naruto/1?server=dub
+
+                                                                                                                                                                                          Downloaded File
+
+                                                                                                                                                                                          nt-animes-{anime}-ep{episode}.mp4
+
+                                                                                                                                                                                          Example:
+
+                                                                                                                                                                                          nt-animes-naruto-ep1.mp4
+
+
+                                                                                                                                                                                          ⸻
+
+                                                                                                                                                                                          Typical Usage Flow
+
+                                                                                                                                                                                          1. Search Anime
+
+                                                                                                                                                                                          /search?keyword=naruto
+
+                                                                                                                                                                                          2. Get anime slug
+
+                                                                                                                                                                                          naruto
+
+                                                                                                                                                                                          3. Fetch metadata
+
+                                                                                                                                                                                          /metadata?anime=naruto
+
+                                                                                                                                                                                          4. Stream episode
+
+                                                                                                                                                                                          /watch/naruto/1
+
+                                                                                                                                                                                          or
+
+                                                                                                                                                                                          /watch/naruto/1?server=dub
+
+
+                                                                                                                                                                                          ⸻
+
+                                                                                                                                                                                          Notes
+
+                                                                                                                                                                                          • Base URL:
+
+                                                                                                                                                                                          https://nt-animes.onrender.com
+
+                                                                                                                                                                                          • Streaming endpoint returns MP4 video stream
+
+                                                                                                                                                                                          • Download endpoint converts HLS → MP4 automatically
+
+                                                                                                                                                                                          • url field from search results is used as the anime slug for other endpoints.
+
+                                                                                                                                                                                          ⸻
+
+                                                                                                                                                                                          If you want, I can also give you a very clean developer docs version (like Stripe / OpenAI docs) that makes your API look 10× more professional.
+                                                                                                                                                                                          
