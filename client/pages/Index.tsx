@@ -72,10 +72,10 @@ export default function Index() {
             {/* Right - Featured Anime Card */}
             <div className="relative h-96 lg:h-full group">
               {/* Glow Effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent rounded-2xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-transparent rounded-2xl blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
               {/* Card */}
-              <div className="relative h-full rounded-2xl border border-primary/30 overflow-hidden bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl p-6 flex flex-col justify-end shadow-2xl shadow-primary/10">
+              <div className="relative h-full rounded-2xl border-2 border-primary/60 overflow-hidden bg-gradient-to-br from-card/70 to-card/30 backdrop-blur-xl p-6 flex flex-col justify-end shadow-2xl shadow-primary/30 hover:shadow-primary/50 transition-shadow duration-300">
                 {/* Featured Image Gradient Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-b from-primary/30 via-primary/10 to-card/50 rounded-2xl"></div>
 
@@ -102,7 +102,7 @@ export default function Index() {
                     Follow Thorfinn's epic journey of revenge and redemption in this masterpiece of anime storytelling.
                   </p>
 
-                  <Button className="w-full sm:w-auto bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-semibold shadow-lg shadow-primary/30">
+                  <Button className="w-full sm:w-auto bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-semibold shadow-lg shadow-primary/50 hover:shadow-xl hover:shadow-primary/70 transition-shadow duration-300">
                     Continue Episode 3
                   </Button>
                 </div>
@@ -126,7 +126,7 @@ export default function Index() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Stream in HD Card */}
-            <div className="group relative rounded-xl border border-primary/30 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl p-8 hover:border-primary/60 transition-all duration-300 overflow-hidden shadow-lg shadow-primary/10 hover:shadow-xl hover:shadow-primary/20">
+            <div className="group relative rounded-xl border border-primary/50 bg-gradient-to-br from-card/70 to-card/30 backdrop-blur-xl p-8 hover:border-primary/80 transition-all duration-300 overflow-hidden shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/40">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl"></div>
               <div className="relative z-10">
                 <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary/40 to-primary/20 flex items-center justify-center mb-6 group-hover:shadow-lg group-hover:shadow-primary/30 transition-shadow">
@@ -140,7 +140,7 @@ export default function Index() {
             </div>
 
             {/* Track Your Watchlist Card */}
-            <div className="group relative rounded-xl border border-primary/30 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl p-8 hover:border-primary/60 transition-all duration-300 overflow-hidden shadow-lg shadow-primary/10 hover:shadow-xl hover:shadow-primary/20">
+            <div className="group relative rounded-xl border border-primary/50 bg-gradient-to-br from-card/70 to-card/30 backdrop-blur-xl p-8 hover:border-primary/80 transition-all duration-300 overflow-hidden shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/40">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl"></div>
               <div className="relative z-10">
                 <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary/40 to-primary/20 flex items-center justify-center mb-6 group-hover:shadow-lg group-hover:shadow-primary/30 transition-shadow">
@@ -154,7 +154,7 @@ export default function Index() {
             </div>
 
             {/* Discover Trending Card */}
-            <div className="group relative rounded-xl border border-primary/30 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl p-8 hover:border-primary/60 transition-all duration-300 overflow-hidden shadow-lg shadow-primary/10 hover:shadow-xl hover:shadow-primary/20">
+            <div className="group relative rounded-xl border border-primary/50 bg-gradient-to-br from-card/70 to-card/30 backdrop-blur-xl p-8 hover:border-primary/80 transition-all duration-300 overflow-hidden shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/40">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl"></div>
               <div className="relative z-10">
                 <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary/40 to-primary/20 flex items-center justify-center mb-6 group-hover:shadow-lg group-hover:shadow-primary/30 transition-shadow">
@@ -184,7 +184,7 @@ export default function Index() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
             {/* Stat 1 */}
-            <div className="group relative rounded-xl border border-primary/30 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl p-8 shadow-lg shadow-primary/10 hover:shadow-xl hover:shadow-primary/20 transition-all overflow-hidden">
+            <div className="group relative rounded-xl border border-primary/50 bg-gradient-to-br from-card/70 to-card/30 backdrop-blur-xl p-8 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/40 transition-all overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl"></div>
               <div className="relative z-10">
                 <div className="text-5xl sm:text-6xl font-bold text-primary mb-4 drop-shadow-lg">98%</div>
@@ -196,7 +196,7 @@ export default function Index() {
             </div>
 
             {/* Stat 2 */}
-            <div className="group relative rounded-xl border border-primary/30 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl p-8 shadow-lg shadow-primary/10 hover:shadow-xl hover:shadow-primary/20 transition-all overflow-hidden">
+            <div className="group relative rounded-xl border border-primary/50 bg-gradient-to-br from-card/70 to-card/30 backdrop-blur-xl p-8 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/40 transition-all overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl"></div>
               <div className="relative z-10">
                 <div className="text-5xl sm:text-6xl font-bold text-primary mb-4 drop-shadow-lg">1M+</div>
@@ -208,7 +208,7 @@ export default function Index() {
             </div>
 
             {/* Stat 3 */}
-            <div className="group relative rounded-xl border border-primary/30 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl p-8 shadow-lg shadow-primary/10 hover:shadow-xl hover:shadow-primary/20 transition-all overflow-hidden">
+            <div className="group relative rounded-xl border border-primary/50 bg-gradient-to-br from-card/70 to-card/30 backdrop-blur-xl p-8 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/40 transition-all overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl"></div>
               <div className="relative z-10">
                 <div className="text-5xl sm:text-6xl font-bold text-primary mb-4 drop-shadow-lg">500K+</div>
@@ -221,7 +221,7 @@ export default function Index() {
           </div>
 
           {/* Chart Placeholder */}
-          <div className="group relative rounded-xl border border-primary/30 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl p-8 shadow-lg shadow-primary/10 overflow-hidden">
+          <div className="group relative rounded-xl border border-primary/50 bg-gradient-to-br from-card/70 to-card/30 backdrop-blur-xl p-8 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/40 overflow-hidden transition-shadow duration-300">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl"></div>
             <div className="relative z-10">
               <h3 className="text-xl font-bold mb-8">Top Trending Anime</h3>
@@ -234,7 +234,7 @@ export default function Index() {
                   { name: "Trappers", value: 62 },
                 ].map((anime) => (
                   <div key={anime.name} className="flex-1 flex flex-col items-center group/bar">
-                    <div className="w-full bg-gradient-to-t from-primary via-primary/70 to-primary/40 rounded-t-lg transition-all hover:from-primary/90 hover:via-primary/80 hover:to-primary/50 shadow-lg shadow-primary/30 group-hover/bar:shadow-xl group-hover/bar:shadow-primary/40" style={{ height: `${anime.value * 2}px` }}></div>
+                    <div className="w-full bg-gradient-to-t from-primary via-primary/70 to-primary/40 rounded-t-lg transition-all hover:from-primary/90 hover:via-primary/80 hover:to-primary/50 shadow-lg shadow-primary/40 group-hover/bar:shadow-xl group-hover/bar:shadow-primary/60" style={{ height: `${anime.value * 2}px` }}></div>
                     <span className="text-xs text-foreground/60 mt-4 text-center">{anime.name}</span>
                   </div>
                 ))}
@@ -260,7 +260,7 @@ export default function Index() {
           </p>
           <Button
             size="lg"
-            className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-semibold shadow-lg shadow-primary/40"
+            className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-semibold shadow-lg shadow-primary/50 hover:shadow-xl hover:shadow-primary/70 transition-shadow duration-300"
           >
             Create Account
           </Button>
