@@ -29,12 +29,17 @@ export default function Search() {
   // Fetch trending anime on mount
   useEffect(() => {
     const fetchTrending = async () => {
+      console.log("[SEARCH] Fetching trending anime...");
       try {
-        const response = await fetch(`${API_BASE_URL}/trending`);
+        const url = `${API_BASE_URL}/trending`;
+        console.log("[SEARCH] Trending URL:", url);
+        const response = await fetch(url);
+        console.log("[SEARCH] Trending response status:", response.status);
         const data = await response.json();
+        console.log("[SEARCH] Trending data received:", data);
         setTrending(data.results || []);
       } catch (error) {
-        console.error("Failed to fetch trending anime:", error);
+        console.error("[SEARCH] Failed to fetch trending anime:", error);
       }
     };
 
@@ -43,29 +48,51 @@ export default function Search() {
 
   // Fetch search results when query changes
   useEffect(() => {
-    if (searchParams.get("q")) {
-      const query = searchParams.get("q")!;
+    const query = searchParams.get("q");
+    console.log("[SEARCH] Search params changed. Query:", query);
+    if (query) {
       setSearchQuery(query);
+      console.log("[SEARCH] Triggering performSearch with:", query);
       performSearch(query);
     }
   }, [searchParams]);
 
   const performSearch = async (query: string) => {
+    console.log("[SEARCH] performSearch called with query:", query);
+
     if (!query.trim()) {
+      console.log("[SEARCH] Empty query, skipping search");
       setResults([]);
       return;
     }
 
     setLoading(true);
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/search?keyword=${encodeURIComponent(query)}`
-      );
+      const encodedQuery = encodeURIComponent(query);
+      const url = `${API_BASE_URL}/search?keyword=${encodedQuery}`;
+      console.log("[SEARCH] Fetching from URL:", url);
+
+      const response = await fetch(url);
+      console.log("[SEARCH] Response status:", response.status);
+
+      if (!response.ok) {
+        console.warn("[SEARCH] Response not OK. Status:", response.status);
+      }
+
       const data = await response.json();
+      console.log("[SEARCH] Response data:", data);
+      console.log("[SEARCH] Results array:", data.results);
+      console.log("[SEARCH] Results count:", data.results?.length || 0);
+
       setResults(data.results || []);
       setHasSearched(true);
+      console.log("[SEARCH] Search complete. Setting results.");
     } catch (error) {
-      console.error("Search failed:", error);
+      console.error("[SEARCH] Search failed with error:", error);
+      if (error instanceof Error) {
+        console.error("[SEARCH] Error message:", error.message);
+        console.error("[SEARCH] Error stack:", error.stack);
+      }
       setResults([]);
     } finally {
       setLoading(false);
@@ -74,12 +101,17 @@ export default function Search() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("[SEARCH] handleSearch called with query:", searchQuery);
     if (searchQuery.trim()) {
+      console.log("[SEARCH] Setting search params with query:", searchQuery);
       setSearchParams({ q: searchQuery });
+    } else {
+      console.log("[SEARCH] Empty query, not setting search params");
     }
   };
 
   const handleClearSearch = () => {
+    console.log("[SEARCH] Clearing search");
     setSearchQuery("");
     setSearchParams({});
     setResults([]);
