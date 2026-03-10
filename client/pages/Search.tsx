@@ -31,6 +31,7 @@ export default function Search() {
     const fetchTrending = async () => {
       console.log("[SEARCH] Fetching trending anime...");
       try {
+        // Call external API directly for trending (not critical for logging)
         const url = `${API_BASE_URL}/trending`;
         console.log("[SEARCH] Trending URL:", url);
         const response = await fetch(url);
@@ -69,7 +70,8 @@ export default function Search() {
     setLoading(true);
     try {
       const encodedQuery = encodeURIComponent(query);
-      const url = `${API_BASE_URL}/search?keyword=${encodedQuery}`;
+      // Call local API endpoint which will log to Vercel
+      const url = `/api/search?keyword=${encodedQuery}`;
       console.log("[SEARCH] Fetching from URL:", url);
 
       const response = await fetch(url);
