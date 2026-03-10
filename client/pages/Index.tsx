@@ -44,13 +44,15 @@ export default function Index() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button
-                  size="lg"
-                  className="btn btn-primary font-semibold"
-                >
-                  <Play className="w-5 h-5" />
-                  Browse Anime
-                </Button>
+                <Link to="/search">
+                  <Button
+                    size="lg"
+                    className="btn btn-primary font-semibold w-full sm:w-auto"
+                  >
+                    <Play className="w-5 h-5" />
+                    Browse Anime
+                  </Button>
+                </Link>
                 <Button
                   size="lg"
                   variant="outline"
@@ -103,9 +105,11 @@ export default function Index() {
                     Follow Thorfinn's epic journey of revenge and redemption in this masterpiece of anime storytelling.
                   </p>
 
-                  <Button className="w-full sm:w-auto btn btn-primary font-semibold shadow-lg transition-shadow duration-300" style={{ boxShadow: '0 0 30px var(--accent-glow)' }}>
-                    Continue Episode 3
-                  </Button>
+                  <Link to="/search?q=vinland-saga">
+                    <Button className="w-full sm:w-auto btn btn-primary font-semibold shadow-lg transition-shadow duration-300" style={{ boxShadow: '0 0 30px var(--accent-glow)' }}>
+                      Continue Episode 3
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -259,13 +263,15 @@ export default function Index() {
           <p className="text-lg mb-10" style={{ color: 'var(--text-muted)' }}>
             Create your free account now and start streaming the top anime series.
           </p>
-          <Button
-            size="lg"
-            className="btn btn-primary font-semibold shadow-lg transition-shadow duration-300"
-            style={{ boxShadow: '0 0 30px var(--accent-glow)' }}
-          >
-            Create Account
-          </Button>
+          <Link to="/search">
+            <Button
+              size="lg"
+              className="btn btn-primary font-semibold shadow-lg transition-shadow duration-300"
+              style={{ boxShadow: '0 0 30px var(--accent-glow)' }}
+            >
+              Create Account
+            </Button>
+          </Link>
         </div>
       </section>
 
