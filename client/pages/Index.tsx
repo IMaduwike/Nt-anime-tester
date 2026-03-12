@@ -32,14 +32,14 @@ export default function Index() {
             <div className="space-y-8">
               <div className="space-y-4">
                 <h1 className="font-bold leading-tight" style={{ color: 'var(--text-main)' }}>
-                  Dive into a World of
+                  Discover Your Next
                   <br />
                   <span style={{ color: 'var(--accent-primary)' }}>
-                    Anime Excellence
+                    Anime Obsession
                   </span>
                 </h1>
                 <p className="text-lg max-w-md" style={{ color: 'var(--text-muted)' }}>
-                  Explore the best anime, stream in HD, and keep track of your watchlist with ease.
+                  Stream the best anime in HD, discover trending series, and manage your watchlist on NT Animes.
                 </p>
               </div>
 
@@ -64,10 +64,10 @@ export default function Index() {
 
               {/* Recent Activity */}
               <div className="pt-4 space-y-3">
-                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Stay Eternally</p>
+                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Updated Daily</p>
                 <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-muted)' }}>
                   <div className="w-2 h-2 rounded-full" style={{ background: 'var(--accent-primary)' }}></div>
-                  <span>Last updated 2 hours ago</span>
+                  <span>New episodes added every day</span>
                 </div>
               </div>
             </div>
@@ -122,10 +122,10 @@ export default function Index() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="font-bold mb-6" style={{ color: 'var(--text-main)' }}>
-              Experience Anime Like Never Before
+              Why Choose NT Animes?
             </h2>
             <p className="text-lg max-w-2xl mx-auto" style={{ color: 'var(--text-muted)' }}>
-              Immerse yourself in a premium streaming experience where every episode is just a click away.
+              The ultimate anime streaming platform with the largest collection and best user experience.
             </p>
           </div>
 
@@ -180,10 +180,10 @@ export default function Index() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="font-bold mb-6" style={{ color: 'var(--text-main)' }}>
-              Join Thousands of Anime Fans
+              Trusted by Anime Fans Worldwide
             </h2>
             <p className="text-lg max-w-2xl mx-auto" style={{ color: 'var(--text-muted)' }}>
-              Our users love the streaming experience we provide.
+              NT Animes is the preferred platform for anime enthusiasts everywhere.
             </p>
           </div>
 
@@ -258,10 +258,10 @@ export default function Index() {
 
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="font-bold mb-6" style={{ color: 'var(--text-main)' }}>
-            Begin Your Anime Adventure Today
+            Start Watching on NT Animes Today
           </h2>
           <p className="text-lg mb-10" style={{ color: 'var(--text-muted)' }}>
-            Create your free account now and start streaming the top anime series.
+            Join thousands of anime fans and stream thousands of episodes with NT Animes.
           </p>
           <Link to="/search">
             <Button
@@ -313,7 +313,7 @@ export default function Index() {
             </div>
           </div>
           <div className="pt-8 flex flex-col sm:flex-row justify-between items-center text-sm" style={{ borderTop: `1px solid var(--border-soft)`, color: 'var(--text-muted)' }}>
-            <p>&copy; 2024 AnimeHub. All rights reserved.</p>
+            <p>&copy; 2024 NT Animes. All rights reserved.</p>
             <div className="flex gap-6 mt-4 sm:mt-0">
               <a href="#" className="transition-colors">Terms</a>
               <a href="#" className="transition-colors">Privacy</a>

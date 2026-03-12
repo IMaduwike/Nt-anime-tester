@@ -9,9 +9,9 @@ export default function Header() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 flex-shrink-0 group hover-lift">
             <div className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300" style={{ background: 'var(--accent-primary)' }}>
-              <span className="text-sm font-bold text-black">A</span>
+              <span className="text-xs font-bold text-black">NT</span>
             </div>
-            <span className="text-xl font-bold hidden sm:inline" style={{ color: 'var(--text-main)' }}>AnimeHub</span>
+            <span className="text-xl font-bold hidden sm:inline" style={{ color: 'var(--text-main)' }}>NT Animes</span>
           </Link>
 
           {/* Navigation */}
