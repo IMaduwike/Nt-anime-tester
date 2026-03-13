@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Search as SearchIcon, Loader2 } from "lucide-react";
@@ -232,37 +232,39 @@ export default function Search() {
 
 function AnimeCard({ anime }: { anime: AnimeResult }) {
   return (
-    <div className="glass group relative rounded-xl overflow-hidden hover-lift h-full flex flex-col" style={{ borderColor: "var(--border-soft)" }}>
-      {/* Image Container */}
-      <div className="relative w-full h-48 overflow-hidden">
-        <img
-          src={anime.thumbnail}
-          alt={anime.title}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-        />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent, var(--bg-main))" }}></div>
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 p-4 flex flex-col justify-between">
-        <div>
-          <h3 className="font-bold text-sm mb-2 line-clamp-2" style={{ color: "var(--text-main)" }}>
-            {anime.title}
-          </h3>
-          <div className="flex flex-wrap gap-2 mb-3">
-            <span className="inline-block px-2 py-1 text-xs font-semibold rounded-sm" style={{ background: "rgba(158, 240, 255, 0.2)", color: "var(--accent-primary)" }}>
-              {anime.type}
-            </span>
-            <span className="inline-block px-2 py-1 text-xs rounded-sm" style={{ background: "var(--bg-surface)", color: "var(--text-muted)" }}>
-              {anime.episodes.total} eps
-            </span>
-          </div>
+    <Link to={`/anime/${anime.url}`}>
+      <div className="glass group relative rounded-xl overflow-hidden hover-lift h-full flex flex-col cursor-pointer" style={{ borderColor: "var(--border-soft)" }}>
+        {/* Image Container */}
+        <div className="relative w-full h-48 overflow-hidden">
+          <img
+            src={anime.thumbnail}
+            alt={anime.title}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+          />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, transparent, var(--bg-main))" }}></div>
         </div>
 
-        <Button className="w-full btn btn-primary text-xs" size="sm">
-          Watch Now
-        </Button>
+        {/* Content */}
+        <div className="flex-1 p-4 flex flex-col justify-between">
+          <div>
+            <h3 className="font-bold text-sm mb-2 line-clamp-2" style={{ color: "var(--text-main)" }}>
+              {anime.title}
+            </h3>
+            <div className="flex flex-wrap gap-2 mb-3">
+              <span className="inline-block px-2 py-1 text-xs font-semibold rounded-sm" style={{ background: "rgba(158, 240, 255, 0.2)", color: "var(--accent-primary)" }}>
+                {anime.type}
+              </span>
+              <span className="inline-block px-2 py-1 text-xs rounded-sm" style={{ background: "var(--bg-surface)", color: "var(--text-muted)" }}>
+                {anime.episodes.total} eps
+              </span>
+            </div>
+          </div>
+
+          <Button className="w-full btn btn-primary text-xs" size="sm">
+            Watch Now
+          </Button>
+        </div>
       </div>
-    </div>
+    </Link>
   );
 }
