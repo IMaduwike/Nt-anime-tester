@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import Hls from "hls.js";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Loader2, Download, ChevronLeft, ChevronRight, ArrowLeft } from "lucide-react";
@@ -14,9 +15,11 @@ interface AnimeMetadata {
 }
 
 export default function Watch() {
-  // Route: /anime/:url/watch/:episode
   const { url, episode } = useParams<{ url: string; episode: string }>();
   const navigate = useNavigate();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const hlsRef = useRef<Hls | null>(null);
+
   const [anime, setAnime] = useState<AnimeMetadata | null>(null);
   const [loading, setLoading] = useState(true);
   const [server, setServer] = useState<"sub" | "dub">("sub");
@@ -27,10 +30,7 @@ export default function Watch() {
     if (!url) { navigate("/"); return; }
     setLoading(true);
     fetch(`/api/metadata?anime=${encodeURIComponent(url)}`)
-      .then((r) => {
-        if (!r.ok) throw new Error("Not found");
-        return r.json();
-      })
+      .then((r) => { if (!r.ok) throw new Error("Not found"); return r.json(); })
       .then((data: AnimeMetadata) => {
         setAnime(data);
         if (!data.has_sub && data.has_dub) setServer("dub");
@@ -39,11 +39,38 @@ export default function Watch() {
       .finally(() => setLoading(false));
   }, [url, navigate]);
 
-  const totalEps = parseInt(anime?.total_episodes || "0") || 0;
+  useEffect(() => {
+    if (!anime || !videoRef.current) return;
 
-  const goTo = (ep: number) => {
-    navigate(`/anime/${url}/watch/${ep}`);
-  };
+    const videoSrc = `/api/watch/${url}/${currentEp}${server === "dub" ? "?server=dub" : ""}`;
+    const video = videoRef.current;
+
+    if (hlsRef.current) {
+      hlsRef.current.destroy();
+      hlsRef.current = null;
+    }
+
+    if (Hls.isSupported()) {
+      const hls = new Hls({ enableWorker: true });
+      hlsRef.current = hls;
+      hls.loadSource(videoSrc);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        video.play().catch(() => {});
+      });
+    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      video.src = videoSrc;
+      video.play().catch(() => {});
+    }
+
+    return () => {
+      hlsRef.current?.destroy();
+      hlsRef.current = null;
+    };
+  }, [url, currentEp, server, anime]);
+
+  const totalEps = parseInt(anime?.total_episodes || "0") || 0;
+  const goTo = (ep: number) => navigate(`/anime/${url}/watch/${ep}`);
 
   if (loading) {
     return (
@@ -56,7 +83,6 @@ export default function Watch() {
 
   if (!anime) return null;
 
-  const videoSrc = `/api/watch/${url}/${currentEp}${server === "dub" ? "?server=dub" : ""}`;
   const downloadSrc = `/api/download/${url}/${currentEp}${server === "dub" ? "?server=dub" : ""}`;
 
   return (
@@ -79,15 +105,11 @@ export default function Watch() {
           style={{ background: "#000", border: "1px solid var(--border-soft)" }}
         >
           <video
-            key={`${url}-${currentEp}-${server}`}
+            ref={videoRef}
             controls
-            autoPlay
             className="w-full"
             style={{ display: "block", maxHeight: "70vh" }}
-          >
-            <source src={videoSrc} type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
+          />
         </div>
 
         <div
@@ -95,11 +117,9 @@ export default function Watch() {
           style={{ borderColor: "var(--border-soft)" }}
         >
           <div className="flex-1 min-w-0">
-            <p className="font-bold truncate" style={{ color: "var(--text-main)" }}>
-              {anime.title}
-            </p>
+            <p className="font-bold truncate" style={{ color: "var(--text-main)" }}>{anime.title}</p>
             <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-              Episode {currentEp} {anime.duration ? `· ${anime.duration}` : ""}
+              Episode {currentEp}{anime.duration ? ` · ${anime.duration}` : ""}
             </p>
           </div>
 
@@ -113,9 +133,7 @@ export default function Watch() {
                   color: server === "sub" ? "#000" : "var(--text-muted)",
                   border: "1px solid var(--border-soft)",
                 }}
-              >
-                SUB
-              </button>
+              >SUB</button>
             )}
             {anime.has_dub && (
               <button
@@ -126,27 +144,15 @@ export default function Watch() {
                   color: server === "dub" ? "#000" : "var(--text-muted)",
                   border: "1px solid var(--border-soft)",
                 }}
-              >
-                DUB
-              </button>
+              >DUB</button>
             )}
           </div>
 
           <div className="flex gap-2 shrink-0">
-            <Button
-              variant="outline"
-              className="btn btn-secondary gap-1 text-xs"
-              disabled={currentEp <= 1}
-              onClick={() => goTo(currentEp - 1)}
-            >
+            <Button variant="outline" className="btn btn-secondary gap-1 text-xs" disabled={currentEp <= 1} onClick={() => goTo(currentEp - 1)}>
               <ChevronLeft className="w-3 h-3" /> Prev
             </Button>
-            <Button
-              variant="outline"
-              className="btn btn-secondary gap-1 text-xs"
-              disabled={currentEp >= totalEps}
-              onClick={() => goTo(currentEp + 1)}
-            >
+            <Button variant="outline" className="btn btn-secondary gap-1 text-xs" disabled={currentEp >= totalEps} onClick={() => goTo(currentEp + 1)}>
               Next <ChevronRight className="w-3 h-3" />
             </Button>
           </div>
