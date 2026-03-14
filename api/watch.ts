@@ -15,40 +15,44 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  // ── Proxy mode: /api/watch?url=<encoded segment or playlist url>
+  // ── Proxy mode: /api/watch?url=<encoded url>
+  // Used for segment/playlist URLs that the backend already rewrote
   if (proxyUrl && typeof proxyUrl === "string") {
     const target = decodeURIComponent(proxyUrl);
     console.log("[SERVER] HLS proxy request:", target);
 
     try {
-      const upstream = await fetch(target, {
-        headers: { Range: req.headers.range || "" },
-      });
+      const headers: Record<string, string> = {};
+      if (req.headers.range) headers["Range"] = req.headers.range;
 
+      const upstream = await fetch(target, { headers });
       const ct = upstream.headers.get("content-type") || "";
+
       res.setHeader("Content-Type", ct);
+      if (upstream.headers.get("content-range")) {
+        res.setHeader("Content-Range", upstream.headers.get("content-range")!);
+      }
 
       const isPlaylist = ct.includes("mpegurl") || target.includes(".m3u8");
 
       if (isPlaylist) {
+        // Rewrite playlist URLs to go back through this proxy
         const text = await upstream.text();
         const base = target.substring(0, target.lastIndexOf("/") + 1);
-        const rewritten = rewriteM3u8(text, base, req);
+        const host = `${req.headers["x-forwarded-proto"] || "https"}://${req.headers.host}`;
+        const rewritten = rewriteM3u8(text, base, host);
         res.status(200).send(rewritten);
       } else {
         // Raw segment — pipe bytes through untouched
         res.status(upstream.status);
         const reader = upstream.body?.getReader();
         if (!reader) { res.end(); return; }
-        const pump = async () => {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) { res.end(); break; }
-            res.write(value);
-          }
-        };
         req.on("close", () => reader.cancel());
-        await pump();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) { res.end(); break; }
+          res.write(value);
+        }
       }
     } catch (err) {
       console.error("[SERVER] Proxy error:", err);
@@ -80,13 +84,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
-    const ct = response.headers.get("content-type") || "";
-    res.setHeader("Content-Type", ct || "application/vnd.apple.mpegurl");
+    const ct = response.headers.get("content-type") || "application/vnd.apple.mpegurl";
+    res.setHeader("Content-Type", ct);
 
     const text = await response.text();
-    // The manifest URLs may be relative — resolve against the upstream URL
+    const host = `${req.headers["x-forwarded-proto"] || "https"}://${req.headers.host}`;
+
+    // Rewrite all URLs in the manifest to go through this proxy
+    // Base = the upstream URL's directory for resolving relative paths
     const base = upstreamUrl.substring(0, upstreamUrl.lastIndexOf("/") + 1);
-    const rewritten = rewriteM3u8(text, base, req);
+    const rewritten = rewriteM3u8(text, base, host);
     res.status(200).send(rewritten);
   } catch (error) {
     console.error("[SERVER] Watch stream error:", error);
@@ -99,17 +106,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 }
 
-// Rewrites all URLs in an m3u8 playlist to go through /api/watch?url=<encoded>
-function rewriteM3u8(text: string, base: string, req: VercelRequest): string {
-  const host = `${req.headers["x-forwarded-proto"] || "https"}://${req.headers.host}`;
-
+function rewriteM3u8(text: string, base: string, host: string): string {
   return text
     .split("\n")
     .map((line) => {
       const trimmed = line.trim();
-      // Skip comments and empty lines
       if (!trimmed || trimmed.startsWith("#")) return line;
-      // Resolve relative URLs
+      // Resolve to absolute URL if relative
       const absolute = trimmed.startsWith("http") ? trimmed : base + trimmed;
       return `${host}/api/watch?url=${encodeURIComponent(absolute)}`;
     })
