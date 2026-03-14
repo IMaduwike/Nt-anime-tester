@@ -57,9 +57,8 @@ export default function Watch() {
 
   if (!anime) return null;
 
-  const videoSrc = `${API_BASE}/watch/${url}/${currentEp}${server === "dub" ? "?server=dub" : ""}`;
-  const downloadSrc = `${API_BASE}/download/${url}/${currentEp}${server === "dub" ? "?server=dub" : ""}`;
-
+  const videoSrc = `/api/watch/${url}/${currentEp}...`
+const downloadSrc = `/api/download/${url}/${currentEp}...`
   return (
     <div className="min-h-screen" style={{ background: "var(--bg-main)", color: "var(--text-main)" }}>
       <div className="fixed inset-0 -z-50 space-bg opacity-40" />
