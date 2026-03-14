@@ -3,7 +3,7 @@ import { VercelRequest, VercelResponse } from "@vercel/node";
 const API_BASE_URL = "https://nt-anime-api.onrender.com";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const { anime, episode, server, url: proxyUrl } = req.query;
+  const { anime, episode, server, p: proxyUrl } = req.query;
 
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
@@ -15,7 +15,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  // ── Proxy mode: /api/watch?url=<encoded url>
+  // ── Proxy mode: /api/watch?p=<encoded url>
   if (proxyUrl && typeof proxyUrl === "string") {
     const target = decodeURIComponent(proxyUrl);
     console.log("[SERVER] HLS proxy request:", target);
@@ -25,14 +25,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (req.headers.range) headers["Range"] = req.headers.range;
 
       const upstream = await fetch(target, { headers });
-
-      if (!upstream.ok && upstream.status === 404) {
-        console.error("[SERVER] 404 from upstream:", target);
-        res.status(404).json({ error: "Upstream 404", url: target });
-        return;
-      }
-
       const ct = upstream.headers.get("content-type") || "";
+
       res.setHeader("Content-Type", ct);
       if (upstream.headers.get("content-range")) {
         res.setHeader("Content-Range", upstream.headers.get("content-range")!);
@@ -90,8 +84,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.setHeader("Content-Type", ct);
 
     const text = await response.text();
-    console.log("[SERVER] Raw manifest:\n", text.substring(0, 500));
-
     const host = `${req.headers["x-forwarded-proto"] || "https"}://${req.headers.host}`;
     const rewritten = rewriteM3u8(text, upstreamUrl, host);
     res.status(200).send(rewritten);
@@ -126,7 +118,7 @@ function rewriteM3u8(text: string, baseUrl: string, host: string): string {
         absolute = dir + trimmed;
       }
 
-      return `${host}/api/watch?url=${encodeURIComponent(absolute)}`;
+      return `${host}/api/watch?p=${encodeURIComponent(absolute)}`;
     })
     .join("\n");
 }
