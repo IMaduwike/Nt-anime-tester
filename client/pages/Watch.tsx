@@ -14,7 +14,7 @@ interface AnimeMetadata {
 }
 
 function formatTime(s: number) {
-  if (isNaN(s)) return "0:00";
+  if (isNaN(s) || !isFinite(s)) return "0:00";
   const m = Math.floor(s / 60);
   const sec = Math.floor(s % 60);
   return `${m}:${sec.toString().padStart(2, "0")}`;
@@ -33,7 +33,6 @@ export default function Watch() {
   const [loading, setLoading] = useState(true);
   const [server, setServer] = useState<"sub" | "dub">("sub");
 
-  // Player state
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -42,7 +41,6 @@ export default function Watch() {
   const [fullscreen, setFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [buffered, setBuffered] = useState(0);
-  const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const [seeking, setSeeking] = useState(false);
 
   const currentEp = parseInt(episode || "1");
@@ -65,9 +63,7 @@ export default function Watch() {
     if (!anime || !videoRef.current) return;
     const video = videoRef.current;
     const videoSrc = `/api/watch/${url}/${currentEp}${server === "dub" ? "?server=dub" : ""}`;
-
     if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; }
-
     if (Hls.isSupported()) {
       const hls = new Hls({ enableWorker: true });
       hlsRef.current = hls;
@@ -78,11 +74,9 @@ export default function Watch() {
       video.src = videoSrc;
       video.play().catch(() => {});
     }
-
     return () => { hlsRef.current?.destroy(); hlsRef.current = null; };
   }, [url, currentEp, server, anime]);
 
-  // Video event listeners
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -90,9 +84,8 @@ export default function Watch() {
     const onPause = () => setPlaying(false);
     const onTimeUpdate = () => {
       setCurrentTime(video.currentTime);
-      if (video.buffered.length > 0) {
+      if (video.buffered.length > 0)
         setBuffered(video.buffered.end(video.buffered.length - 1));
-      }
     };
     const onDurationChange = () => setDuration(video.duration);
     const onVolumeChange = () => { setVolume(video.volume); setMuted(video.muted); };
@@ -110,14 +103,12 @@ export default function Watch() {
     };
   }, [anime]);
 
-  // Fullscreen listener
   useEffect(() => {
     const onFsChange = () => setFullscreen(!!document.fullscreenElement);
     document.addEventListener("fullscreenchange", onFsChange);
     return () => document.removeEventListener("fullscreenchange", onFsChange);
   }, []);
 
-  // Keyboard shortcuts
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const video = videoRef.current;
@@ -140,27 +131,19 @@ export default function Watch() {
   const resetControlsTimer = useCallback(() => {
     setShowControls(true);
     if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
-    controlsTimerRef.current = setTimeout(() => { if (playing) setShowControls(false); }, 3000);
+    controlsTimerRef.current = setTimeout(() => {
+      if (playing) setShowControls(false);
+    }, 3500);
   }, [playing]);
 
-  const togglePlay = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    playing ? video.pause() : video.play();
-  };
-
+  const togglePlay = () => { const v = videoRef.current; if (!v) return; playing ? v.pause() : v.play(); };
   const toggleFullscreen = () => {
     const el = containerRef.current;
     if (!el) return;
     if (!document.fullscreenElement) el.requestFullscreen();
     else document.exitFullscreen();
   };
-
-  const toggleMute = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    video.muted = !video.muted;
-  };
+  const toggleMute = () => { const v = videoRef.current; if (!v) return; v.muted = !v.muted; };
 
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const video = videoRef.current;
@@ -180,7 +163,6 @@ export default function Watch() {
   };
 
   const goTo = (ep: number) => navigate(`/anime/${url}/watch/${ep}`);
-
   const progressPct = duration ? (currentTime / duration) * 100 : 0;
   const bufferedPct = duration ? (buffered / duration) * 100 : 0;
 
@@ -212,11 +194,16 @@ export default function Watch() {
           Back to {anime.title}
         </Link>
 
-        {/* ── Custom Video Player ── */}
+        {/* Player */}
         <div
           ref={containerRef}
-          className="relative w-full rounded-2xl overflow-hidden select-none"
-          style={{ background: "#000", border: "1px solid var(--border-soft)", aspectRatio: "16/9" }}
+          className="relative w-full overflow-hidden select-none"
+          style={{
+            background: "#000",
+            borderRadius: "16px",
+            aspectRatio: "16/9",
+            boxShadow: "0 8px 40px rgba(0,0,0,0.6)",
+          }}
           onMouseMove={resetControlsTimer}
           onMouseLeave={() => playing && setShowControls(false)}
           onMouseEnter={() => setShowControls(true)}
@@ -225,145 +212,194 @@ export default function Watch() {
             ref={videoRef}
             className="w-full h-full object-contain"
             onClick={togglePlay}
-            style={{ cursor: "pointer" }}
+            style={{ cursor: "pointer", display: "block" }}
           />
 
-          {/* Big play/pause flash */}
+          {/* Centre play icon when paused */}
           {!playing && (
-            <div
-              className="absolute inset-0 flex items-center justify-center pointer-events-none"
-              style={{ background: "rgba(0,0,0,0.3)" }}
-            >
-              <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: "rgba(0,0,0,0.6)", border: "2px solid rgba(255,255,255,0.3)" }}>
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21" /></svg>
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div
+                className="flex items-center justify-center"
+                style={{
+                  width: 72, height: 72, borderRadius: "50%",
+                  background: "rgba(0,0,0,0.55)",
+                  border: "2px solid rgba(255,255,255,0.25)",
+                  backdropFilter: "blur(4px)",
+                }}
+              >
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+                  <polygon points="6,3 20,12 6,21" />
+                </svg>
               </div>
             </div>
           )}
 
-          {/* Controls overlay */}
+          {/* Controls */}
           <div
-            className="absolute inset-x-0 bottom-0 transition-all duration-300"
             style={{
+              position: "absolute", inset: 0,
               opacity: showControls ? 1 : 0,
               pointerEvents: showControls ? "auto" : "none",
-              background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)",
-              padding: "48px 16px 14px",
+              transition: "opacity 0.3s ease",
+              background: "linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 40%, transparent 70%)",
+              display: "flex", flexDirection: "column", justifyContent: "flex-end",
+              padding: "0 20px 16px",
             }}
           >
-            {/* Episode title */}
-            <div className="mb-2 px-1">
-              <p className="text-sm font-semibold truncate" style={{ color: "#fff" }}>{anime.title}</p>
-              <p className="text-xs" style={{ color: "rgba(255,255,255,0.6)" }}>Episode {currentEp}{anime.duration ? ` · ${anime.duration}` : ""}</p>
+            {/* Title row */}
+            <div style={{ marginBottom: 10 }}>
+              <p style={{ color: "#fff", fontWeight: 600, fontSize: 14, margin: 0, opacity: 0.95 }}>
+                {anime.title}
+              </p>
+              <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 12, margin: 0, marginTop: 1 }}>
+                Episode {currentEp}{anime.duration ? ` · ${anime.duration}` : ""}
+              </p>
             </div>
 
             {/* Progress bar */}
             <div
               ref={progressRef}
-              className="relative w-full mb-3 cursor-pointer group/progress"
-              style={{ height: "4px" }}
               onClick={handleProgressClick}
               onMouseEnter={() => setSeeking(true)}
               onMouseLeave={() => setSeeking(false)}
+              style={{
+                position: "relative", height: seeking ? 6 : 4,
+                borderRadius: 9999, cursor: "pointer",
+                background: "rgba(255,255,255,0.18)",
+                marginBottom: 14,
+                transition: "height 0.15s ease",
+              }}
             >
-              <div className="absolute inset-0 rounded-full" style={{ background: "rgba(255,255,255,0.2)" }} />
-              <div className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${bufferedPct}%`, background: "rgba(255,255,255,0.35)" }} />
-              <div className="absolute inset-y-0 left-0 rounded-full transition-all" style={{ width: `${progressPct}%`, background: "var(--accent-primary)" }} />
-              {/* Scrubber thumb */}
-              <div
-                className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full transition-transform"
-                style={{
-                  left: `${progressPct}%`,
-                  transform: `translateX(-50%) translateY(-50%) scale(${seeking ? 1.4 : 1})`,
-                  background: "var(--accent-primary)",
-                  boxShadow: "0 0 6px rgba(158,240,255,0.8)",
-                }}
-              />
+              {/* Buffered */}
+              <div style={{
+                position: "absolute", inset: 0,
+                width: `${bufferedPct}%`, borderRadius: 9999,
+                background: "rgba(255,255,255,0.3)",
+              }} />
+              {/* Played */}
+              <div style={{
+                position: "absolute", inset: 0,
+                width: `${progressPct}%`, borderRadius: 9999,
+                background: "var(--accent-primary)",
+              }} />
+              {/* Thumb */}
+              <div style={{
+                position: "absolute", top: "50%",
+                left: `${progressPct}%`,
+                transform: `translate(-50%, -50%) scale(${seeking ? 1.3 : 1})`,
+                width: 14, height: 14, borderRadius: "50%",
+                background: "var(--accent-primary)",
+                boxShadow: "0 0 8px rgba(158,240,255,0.7)",
+                transition: "transform 0.15s ease",
+              }} />
             </div>
 
             {/* Controls row */}
-            <div className="flex items-center gap-3">
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+
               {/* Play/Pause */}
-              <button onClick={togglePlay} className="flex items-center justify-center w-8 h-8 rounded-full transition-all hover:scale-110" style={{ color: "#fff" }}>
+              <button onClick={togglePlay} style={btnStyle}>
                 {playing
-                  ? <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-                  : <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                  ? <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                  : <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
                 }
               </button>
 
-              {/* Skip back 10s */}
-              <button onClick={() => { if (videoRef.current) videoRef.current.currentTime = Math.max(0, currentTime - 10); }} className="flex items-center justify-center w-8 h-8 rounded-full transition-all hover:scale-110" style={{ color: "#fff" }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/><text x="9" y="15" fontSize="6" fill="currentColor" stroke="none">10</text></svg>
+              {/* Skip back */}
+              <button onClick={() => { if (videoRef.current) videoRef.current.currentTime = Math.max(0, currentTime - 10); }} style={btnStyle} title="Back 10s">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8">
+                  <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
+                  <text x="9.5" y="14.5" fontSize="5.5" fill="white" stroke="none" fontWeight="bold">10</text>
+                </svg>
               </button>
 
-              {/* Skip forward 10s */}
-              <button onClick={() => { if (videoRef.current) videoRef.current.currentTime = Math.min(duration, currentTime + 10); }} className="flex items-center justify-center w-8 h-8 rounded-full transition-all hover:scale-110" style={{ color: "#fff" }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.49-4.5"/><text x="9" y="15" fontSize="6" fill="currentColor" stroke="none">10</text></svg>
+              {/* Skip forward */}
+              <button onClick={() => { if (videoRef.current) videoRef.current.currentTime = Math.min(duration, currentTime + 10); }} style={btnStyle} title="Forward 10s">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8">
+                  <path d="M12 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8z"/>
+                  <text x="9.5" y="14.5" fontSize="5.5" fill="white" stroke="none" fontWeight="bold">10</text>
+                </svg>
               </button>
 
               {/* Volume */}
-              <div className="relative flex items-center gap-1" onMouseEnter={() => setShowVolumeSlider(true)} onMouseLeave={() => setShowVolumeSlider(false)}>
-                <button onClick={toggleMute} className="flex items-center justify-center w-8 h-8 rounded-full transition-all hover:scale-110" style={{ color: "#fff" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <button onClick={toggleMute} style={btnStyle}>
                   {muted || volume === 0
-                    ? <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15" stroke="currentColor" strokeWidth="2"/><line x1="17" y1="9" x2="23" y2="15" stroke="currentColor" strokeWidth="2"/></svg>
+                    ? <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15" stroke="white" strokeWidth="2"/><line x1="17" y1="9" x2="23" y2="15" stroke="white" strokeWidth="2"/></svg>
                     : volume < 0.5
-                    ? <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07" fill="none" stroke="currentColor" strokeWidth="2"/></svg>
-                    : <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" fill="none" stroke="currentColor" strokeWidth="2"/></svg>
+                    ? <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07" fill="none" stroke="white" strokeWidth="2"/></svg>
+                    : <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" fill="none" stroke="white" strokeWidth="2"/></svg>
                   }
                 </button>
-                <div className="overflow-hidden transition-all duration-200" style={{ width: showVolumeSlider ? "72px" : "0px" }}>
-                  <input
-                    type="range" min="0" max="1" step="0.05"
-                    value={muted ? 0 : volume}
-                    onChange={handleVolumeChange}
-                    className="w-full accent-cyan-300"
-                    style={{ height: "3px" }}
-                  />
-                </div>
+                <input
+                  type="range" min="0" max="1" step="0.05"
+                  value={muted ? 0 : volume}
+                  onChange={handleVolumeChange}
+                  style={{ width: 70, accentColor: "var(--accent-primary)", cursor: "pointer" }}
+                />
               </div>
 
               {/* Time */}
-              <span className="text-xs tabular-nums" style={{ color: "rgba(255,255,255,0.8)" }}>
+              <span style={{ color: "rgba(255,255,255,0.75)", fontSize: 12, fontVariantNumeric: "tabular-nums", marginLeft: 2 }}>
                 {formatTime(currentTime)} / {formatTime(duration)}
               </span>
 
-              <div className="flex-1" />
+              <div style={{ flex: 1 }} />
 
               {/* Sub/Dub */}
-              <div className="flex gap-1">
-                {anime.has_sub && (
-                  <button onClick={() => setServer("sub")} className="text-xs font-bold px-2 py-0.5 rounded transition-all" style={{ background: server === "sub" ? "var(--accent-primary)" : "rgba(255,255,255,0.12)", color: server === "sub" ? "#000" : "#fff" }}>
-                    SUB
-                  </button>
-                )}
-                {anime.has_dub && (
-                  <button onClick={() => setServer("dub")} className="text-xs font-bold px-2 py-0.5 rounded transition-all" style={{ background: server === "dub" ? "var(--accent-primary)" : "rgba(255,255,255,0.12)", color: server === "dub" ? "#000" : "#fff" }}>
-                    DUB
-                  </button>
-                )}
-              </div>
+              {(anime.has_sub || anime.has_dub) && (
+                <div style={{ display: "flex", gap: 4 }}>
+                  {anime.has_sub && (
+                    <button
+                      onClick={() => setServer("sub")}
+                      style={{
+                        fontSize: 11, fontWeight: 700, padding: "3px 9px",
+                        borderRadius: 6, border: "none", cursor: "pointer",
+                        background: server === "sub" ? "var(--accent-primary)" : "rgba(255,255,255,0.15)",
+                        color: server === "sub" ? "#000" : "#fff",
+                        transition: "all 0.2s",
+                      }}
+                    >SUB</button>
+                  )}
+                  {anime.has_dub && (
+                    <button
+                      onClick={() => setServer("dub")}
+                      style={{
+                        fontSize: 11, fontWeight: 700, padding: "3px 9px",
+                        borderRadius: 6, border: "none", cursor: "pointer",
+                        background: server === "dub" ? "var(--accent-primary)" : "rgba(255,255,255,0.15)",
+                        color: server === "dub" ? "#000" : "#fff",
+                        transition: "all 0.2s",
+                      }}
+                    >DUB</button>
+                  )}
+                </div>
+              )}
 
-              {/* Prev/Next episode */}
+              {/* Prev episode */}
               {currentEp > 1 && (
-                <button onClick={() => goTo(currentEp - 1)} className="flex items-center justify-center w-8 h-8 rounded-full transition-all hover:scale-110" style={{ color: "#fff" }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="19,20 9,12 19,4"/><rect x="5" y="4" width="2" height="16"/></svg>
+                <button onClick={() => goTo(currentEp - 1)} style={btnStyle} title="Previous episode">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><polygon points="19,20 9,12 19,4"/><rect x="5" y="4" width="2.5" height="16"/></svg>
                 </button>
               )}
+
+              {/* Next episode */}
               {currentEp < totalEps && (
-                <button onClick={() => goTo(currentEp + 1)} className="flex items-center justify-center w-8 h-8 rounded-full transition-all hover:scale-110" style={{ color: "#fff" }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,4 15,12 5,20"/><rect x="17" y="4" width="2" height="16"/></svg>
+                <button onClick={() => goTo(currentEp + 1)} style={btnStyle} title="Next episode">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><polygon points="5,4 15,12 5,20"/><rect x="16.5" y="4" width="2.5" height="16"/></svg>
                 </button>
               )}
 
               {/* Download */}
-              <a href={downloadSrc} target="_blank" rel="noreferrer" className="flex items-center justify-center w-8 h-8 rounded-full transition-all hover:scale-110" style={{ color: "#fff" }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <a href={downloadSrc} target="_blank" rel="noreferrer" style={{ ...btnStyle, display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }} title="Download">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               </a>
 
               {/* Fullscreen */}
-              <button onClick={toggleFullscreen} className="flex items-center justify-center w-8 h-8 rounded-full transition-all hover:scale-110" style={{ color: "#fff" }}>
+              <button onClick={toggleFullscreen} style={btnStyle} title="Fullscreen">
                 {fullscreen
-                  ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
-                  : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+                  ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+                  : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
                 }
               </button>
             </div>
@@ -373,7 +409,9 @@ export default function Watch() {
         {/* Episode grid */}
         {totalEps > 0 && (
           <div className="mt-8">
-            <h3 className="text-sm font-bold mb-3 uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>Episodes</h3>
+            <h3 className="text-sm font-bold mb-3 uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+              Episodes
+            </h3>
             <div className="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-14 lg:grid-cols-16 gap-1.5">
               {Array.from({ length: totalEps }, (_, i) => i + 1).map((ep) => (
                 <button
@@ -383,7 +421,7 @@ export default function Watch() {
                   style={{
                     background: ep === currentEp ? "var(--accent-primary)" : "rgba(255,255,255,0.05)",
                     color: ep === currentEp ? "#000" : "var(--text-muted)",
-                    border: "1px solid var(--border-soft)",
+                    border: ep === currentEp ? "1px solid var(--accent-primary)" : "1px solid var(--border-soft)",
                   }}
                 >
                   {ep}
@@ -396,3 +434,11 @@ export default function Watch() {
     </div>
   );
 }
+
+const btnStyle: React.CSSProperties = {
+  width: 34, height: 34, borderRadius: "50%",
+  display: "flex", alignItems: "center", justifyContent: "center",
+  background: "transparent", border: "none", cursor: "pointer",
+  transition: "background 0.15s ease",
+  flexShrink: 0,
+};
