@@ -1,5 +1,5 @@
 {
-  "name": "fusion-starter",
+  "name": "nt-animes",
   "private": true,
   "type": "module",
   "pkg": {
@@ -24,7 +24,8 @@
     "@vercel/node": "^3.1.0",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
-    "zod": "^3.25.76"
+    "zod": "^3.25.76",
+    "hls.js":"^1.6.15",
   },
   "devDependencies": {
     "@hookform/resolvers": "^5.2.1",
