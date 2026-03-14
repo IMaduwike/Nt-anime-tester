@@ -25,8 +25,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (req.headers.range) headers["Range"] = req.headers.range;
 
       const upstream = await fetch(target, { headers });
-      const ct = upstream.headers.get("content-type") || "";
 
+      if (!upstream.ok && upstream.status === 404) {
+        console.error("[SERVER] 404 from upstream:", target);
+        res.status(404).json({ error: "Upstream 404", url: target });
+        return;
+      }
+
+      const ct = upstream.headers.get("content-type") || "";
       res.setHeader("Content-Type", ct);
       if (upstream.headers.get("content-range")) {
         res.setHeader("Content-Range", upstream.headers.get("content-range")!);
@@ -84,6 +90,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.setHeader("Content-Type", ct);
 
     const text = await response.text();
+    console.log("[SERVER] Raw manifest:\n", text.substring(0, 500));
+
     const host = `${req.headers["x-forwarded-proto"] || "https"}://${req.headers.host}`;
     const rewritten = rewriteM3u8(text, upstreamUrl, host);
     res.status(200).send(rewritten);
@@ -99,9 +107,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 }
 
 function rewriteM3u8(text: string, baseUrl: string, host: string): string {
-  // Parse origin and directory from the base URL
   const parsed = new URL(baseUrl);
-  const origin = parsed.origin; // e.g. https://nt-anime-api.onrender.com
+  const origin = parsed.origin;
   const dir = parsed.href.substring(0, parsed.href.lastIndexOf("/") + 1);
 
   return text
@@ -112,13 +119,10 @@ function rewriteM3u8(text: string, baseUrl: string, host: string): string {
 
       let absolute: string;
       if (trimmed.startsWith("http")) {
-        // Already absolute
         absolute = trimmed;
       } else if (trimmed.startsWith("/")) {
-        // Root-relative — prepend origin only
         absolute = origin + trimmed;
       } else {
-        // Directory-relative
         absolute = dir + trimmed;
       }
 
