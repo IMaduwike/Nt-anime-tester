@@ -2,21 +2,13 @@
   "buildCommand": "npm run build:client",
   "outputDirectory": "dist/spa",
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
-    },
-    {
-      "src": "/assets/(.*)",
-      "dest": "/assets/$1"
-    },
-    {
-      "src": "/(.*\\.\\w+)$",
-      "dest": "/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
+    { "src": "/api/search", "dest": "/api/search" },
+    { "src": "/api/trending", "dest": "/api/trending" },
+    { "src": "/api/metadata", "dest": "/api/metadata" },
+    { "src": "/api/watch/([^/]+)/([^/]+)", "dest": "/api/watch?anime=$1&episode=$2" },
+    { "src": "/api/download/([^/]+)/([^/]+)", "dest": "/api/download?anime=$1&episode=$2" },
+    { "src": "/assets/(.*)", "dest": "/assets/$1" },
+    { "src": "/(.*\\.\\w+)$", "dest": "/$1" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
