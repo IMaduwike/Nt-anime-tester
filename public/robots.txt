@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://nt-anime-tester.vercel.app/sitemap.xml
+Sitemap: https://nt-animes.vercel.app/sitemap.xml
