@@ -1,6 +1,6 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
 
-const API_BASE_URL = "https://nt-anime-api.onrender.com";
+const API_BASE_URL = "https://neon-ai-anime-api.hf.space";
 
 export default async function handler(_req: VercelRequest, res: VercelResponse) {
   console.log("[SERVER] Trending API endpoint invoked");
