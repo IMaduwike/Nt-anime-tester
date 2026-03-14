@@ -193,7 +193,7 @@ export default function Anime() {
               </p>
 
               <div className="flex flex-wrap gap-3">
-                <Link to={`/anime/${url}/watch`}>
+                <Link to={`/anime/${url}/watch/1`}>
                   <Button className="btn btn-primary font-semibold gap-2 px-6">
                     <Play className="w-4 h-4" />
                     Watch Now
@@ -296,7 +296,7 @@ export default function Anime() {
                 {anime.total_episodes} episode{parseInt(anime.total_episodes) !== 1 ? "s" : ""} · {anime.duration} each
               </p>
             </div>
-            <Link to={`/anime/${url}/watch`}>
+            <Link to={`/anime/${url}/watch/1`}>
               <Button className="btn btn-primary font-semibold gap-2 px-8">
                 <Play className="w-4 h-4" />
                 Start Watching
