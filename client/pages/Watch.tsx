@@ -2,7 +2,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import Hls from "hls.js";
 import Header from "@/components/Header";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, ArrowLeft, Download, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface AnimeMetadata {
   title: string;
@@ -20,6 +21,13 @@ function formatTime(s: number) {
   return `${m}:${sec.toString().padStart(2, "0")}`;
 }
 
+const btnStyle: React.CSSProperties = {
+  width: 36, height: 36, borderRadius: "50%",
+  display: "flex", alignItems: "center", justifyContent: "center",
+  background: "transparent", border: "none", cursor: "pointer",
+  flexShrink: 0,
+};
+
 export default function Watch() {
   const { url, episode } = useParams<{ url: string; episode: string }>();
   const navigate = useNavigate();
@@ -36,7 +44,6 @@ export default function Watch() {
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(1);
   const [muted, setMuted] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
@@ -88,7 +95,7 @@ export default function Watch() {
         setBuffered(video.buffered.end(video.buffered.length - 1));
     };
     const onDurationChange = () => setDuration(video.duration);
-    const onVolumeChange = () => { setVolume(video.volume); setMuted(video.muted); };
+    const onVolumeChange = () => setMuted(video.muted);
     video.addEventListener("play", onPlay);
     video.addEventListener("pause", onPause);
     video.addEventListener("timeupdate", onTimeUpdate);
@@ -118,8 +125,6 @@ export default function Watch() {
         case " ": case "k": e.preventDefault(); playing ? video.pause() : video.play(); break;
         case "ArrowRight": e.preventDefault(); video.currentTime = Math.min(video.currentTime + 10, video.duration); break;
         case "ArrowLeft": e.preventDefault(); video.currentTime = Math.max(video.currentTime - 10, 0); break;
-        case "ArrowUp": e.preventDefault(); video.volume = Math.min(video.volume + 0.1, 1); break;
-        case "ArrowDown": e.preventDefault(); video.volume = Math.max(video.volume - 0.1, 0); break;
         case "m": video.muted = !video.muted; break;
         case "f": toggleFullscreen(); break;
       }
@@ -154,14 +159,6 @@ export default function Watch() {
     video.currentTime = ratio * duration;
   };
 
-  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const video = videoRef.current;
-    if (!video) return;
-    const v = parseFloat(e.target.value);
-    video.volume = v;
-    video.muted = v === 0;
-  };
-
   const goTo = (ep: number) => navigate(`/anime/${url}/watch/${ep}`);
   const progressPct = duration ? (currentTime / duration) * 100 : 0;
   const bufferedPct = duration ? (buffered / duration) * 100 : 0;
@@ -194,7 +191,7 @@ export default function Watch() {
           Back to {anime.title}
         </Link>
 
-        {/* Player */}
+        {/* ── Video Player ── */}
         <div
           ref={containerRef}
           className="relative w-full overflow-hidden select-none"
@@ -218,15 +215,13 @@ export default function Watch() {
           {/* Centre play icon when paused */}
           {!playing && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div
-                className="flex items-center justify-center"
-                style={{
-                  width: 72, height: 72, borderRadius: "50%",
-                  background: "rgba(0,0,0,0.55)",
-                  border: "2px solid rgba(255,255,255,0.25)",
-                  backdropFilter: "blur(4px)",
-                }}
-              >
+              <div style={{
+                width: 72, height: 72, borderRadius: "50%",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                background: "rgba(0,0,0,0.55)",
+                border: "2px solid rgba(255,255,255,0.25)",
+                backdropFilter: "blur(4px)",
+              }}>
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
                   <polygon points="6,3 20,12 6,21" />
                 </svg>
@@ -234,28 +229,16 @@ export default function Watch() {
             </div>
           )}
 
-          {/* Controls */}
-          <div
-            style={{
-              position: "absolute", inset: 0,
-              opacity: showControls ? 1 : 0,
-              pointerEvents: showControls ? "auto" : "none",
-              transition: "opacity 0.3s ease",
-              background: "linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 40%, transparent 70%)",
-              display: "flex", flexDirection: "column", justifyContent: "flex-end",
-              padding: "0 20px 16px",
-            }}
-          >
-            {/* Title row */}
-            <div style={{ marginBottom: 10 }}>
-              <p style={{ color: "#fff", fontWeight: 600, fontSize: 14, margin: 0, opacity: 0.95 }}>
-                {anime.title}
-              </p>
-              <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 12, margin: 0, marginTop: 1 }}>
-                Episode {currentEp}{anime.duration ? ` · ${anime.duration}` : ""}
-              </p>
-            </div>
-
+          {/* Controls overlay — only play/pause, skip, time, mute, fullscreen */}
+          <div style={{
+            position: "absolute", inset: 0,
+            opacity: showControls ? 1 : 0,
+            pointerEvents: showControls ? "auto" : "none",
+            transition: "opacity 0.3s ease",
+            background: "linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.1) 35%, transparent 60%)",
+            display: "flex", flexDirection: "column", justifyContent: "flex-end",
+            padding: "0 16px 14px",
+          }}>
             {/* Progress bar */}
             <div
               ref={progressRef}
@@ -263,150 +246,151 @@ export default function Watch() {
               onMouseEnter={() => setSeeking(true)}
               onMouseLeave={() => setSeeking(false)}
               style={{
-                position: "relative", height: seeking ? 6 : 4,
-                borderRadius: 9999, cursor: "pointer",
-                background: "rgba(255,255,255,0.18)",
-                marginBottom: 14,
+                position: "relative",
+                height: seeking ? 6 : 4,
+                borderRadius: 9999,
+                cursor: "pointer",
+                background: "rgba(255,255,255,0.2)",
+                marginBottom: 12,
                 transition: "height 0.15s ease",
               }}
             >
-              {/* Buffered */}
-              <div style={{
-                position: "absolute", inset: 0,
-                width: `${bufferedPct}%`, borderRadius: 9999,
-                background: "rgba(255,255,255,0.3)",
-              }} />
-              {/* Played */}
-              <div style={{
-                position: "absolute", inset: 0,
-                width: `${progressPct}%`, borderRadius: 9999,
-                background: "var(--accent-primary)",
-              }} />
-              {/* Thumb */}
+              <div style={{ position: "absolute", inset: 0, width: `${bufferedPct}%`, borderRadius: 9999, background: "rgba(255,255,255,0.3)" }} />
+              <div style={{ position: "absolute", inset: 0, width: `${progressPct}%`, borderRadius: 9999, background: "var(--accent-primary)" }} />
               <div style={{
                 position: "absolute", top: "50%",
                 left: `${progressPct}%`,
                 transform: `translate(-50%, -50%) scale(${seeking ? 1.3 : 1})`,
-                width: 14, height: 14, borderRadius: "50%",
+                width: 13, height: 13, borderRadius: "50%",
                 background: "var(--accent-primary)",
-                boxShadow: "0 0 8px rgba(158,240,255,0.7)",
+                boxShadow: "0 0 8px rgba(158,240,255,0.8)",
                 transition: "transform 0.15s ease",
               }} />
             </div>
 
-            {/* Controls row */}
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            {/* Controls row — minimal, just the essentials */}
+            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
 
               {/* Play/Pause */}
               <button onClick={togglePlay} style={btnStyle}>
                 {playing
-                  ? <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-                  : <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+                  ? <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                  : <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
                 }
               </button>
 
-              {/* Skip back */}
+              {/* Skip back 10s */}
               <button onClick={() => { if (videoRef.current) videoRef.current.currentTime = Math.max(0, currentTime - 10); }} style={btnStyle} title="Back 10s">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8">
-                  <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
-                  <text x="9.5" y="14.5" fontSize="5.5" fill="white" stroke="none" fontWeight="bold">10</text>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                  <path d="M12.5 8c-2.65 0-5.05 1-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/>
+                  <text x="8.5" y="21" fontSize="5" fill="white" fontWeight="bold">10</text>
                 </svg>
               </button>
 
-              {/* Skip forward */}
+              {/* Skip forward 10s */}
               <button onClick={() => { if (videoRef.current) videoRef.current.currentTime = Math.min(duration, currentTime + 10); }} style={btnStyle} title="Forward 10s">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8">
-                  <path d="M12 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8z"/>
-                  <text x="9.5" y="14.5" fontSize="5.5" fill="white" stroke="none" fontWeight="bold">10</text>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                  <path d="M11.5 8c2.65 0 5.05 1 6.9 2.6L22 7v9h-9l3.62-3.62C15.23 11.22 13.46 10.5 11.5 10.5c-3.54 0-6.55 2.31-7.6 5.5l-2.37-.78C2.92 11.03 6.85 8 11.5 8z"/>
+                  <text x="8.5" y="21" fontSize="5" fill="white" fontWeight="bold">10</text>
                 </svg>
               </button>
 
-              {/* Volume */}
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <button onClick={toggleMute} style={btnStyle}>
-                  {muted || volume === 0
-                    ? <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15" stroke="white" strokeWidth="2"/><line x1="17" y1="9" x2="23" y2="15" stroke="white" strokeWidth="2"/></svg>
-                    : volume < 0.5
-                    ? <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07" fill="none" stroke="white" strokeWidth="2"/></svg>
-                    : <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" fill="none" stroke="white" strokeWidth="2"/></svg>
-                  }
-                </button>
-                <input
-                  type="range" min="0" max="1" step="0.05"
-                  value={muted ? 0 : volume}
-                  onChange={handleVolumeChange}
-                  style={{ width: 70, accentColor: "var(--accent-primary)", cursor: "pointer" }}
-                />
-              </div>
+              {/* Mute */}
+              <button onClick={toggleMute} style={btnStyle}>
+                {muted
+                  ? <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15" stroke="white" strokeWidth="2"/><line x1="17" y1="9" x2="23" y2="15" stroke="white" strokeWidth="2"/></svg>
+                  : <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" fill="none" stroke="white" strokeWidth="2"/></svg>
+                }
+              </button>
 
               {/* Time */}
-              <span style={{ color: "rgba(255,255,255,0.75)", fontSize: 12, fontVariantNumeric: "tabular-nums", marginLeft: 2 }}>
+              <span style={{ color: "rgba(255,255,255,0.8)", fontSize: 12, fontVariantNumeric: "tabular-nums", marginLeft: 4 }}>
                 {formatTime(currentTime)} / {formatTime(duration)}
               </span>
 
               <div style={{ flex: 1 }} />
 
-              {/* Sub/Dub */}
-              {(anime.has_sub || anime.has_dub) && (
-                <div style={{ display: "flex", gap: 4 }}>
-                  {anime.has_sub && (
-                    <button
-                      onClick={() => setServer("sub")}
-                      style={{
-                        fontSize: 11, fontWeight: 700, padding: "3px 9px",
-                        borderRadius: 6, border: "none", cursor: "pointer",
-                        background: server === "sub" ? "var(--accent-primary)" : "rgba(255,255,255,0.15)",
-                        color: server === "sub" ? "#000" : "#fff",
-                        transition: "all 0.2s",
-                      }}
-                    >SUB</button>
-                  )}
-                  {anime.has_dub && (
-                    <button
-                      onClick={() => setServer("dub")}
-                      style={{
-                        fontSize: 11, fontWeight: 700, padding: "3px 9px",
-                        borderRadius: 6, border: "none", cursor: "pointer",
-                        background: server === "dub" ? "var(--accent-primary)" : "rgba(255,255,255,0.15)",
-                        color: server === "dub" ? "#000" : "#fff",
-                        transition: "all 0.2s",
-                      }}
-                    >DUB</button>
-                  )}
-                </div>
-              )}
-
-              {/* Prev episode */}
-              {currentEp > 1 && (
-                <button onClick={() => goTo(currentEp - 1)} style={btnStyle} title="Previous episode">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><polygon points="19,20 9,12 19,4"/><rect x="5" y="4" width="2.5" height="16"/></svg>
-                </button>
-              )}
-
-              {/* Next episode */}
-              {currentEp < totalEps && (
-                <button onClick={() => goTo(currentEp + 1)} style={btnStyle} title="Next episode">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><polygon points="5,4 15,12 5,20"/><rect x="16.5" y="4" width="2.5" height="16"/></svg>
-                </button>
-              )}
-
-              {/* Download */}
-              <a href={downloadSrc} target="_blank" rel="noreferrer" style={{ ...btnStyle, display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }} title="Download">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              </a>
-
               {/* Fullscreen */}
-              <button onClick={toggleFullscreen} style={btnStyle} title="Fullscreen">
+              <button onClick={toggleFullscreen} style={btnStyle}>
                 {fullscreen
-                  ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
-                  : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+                  ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+                  : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
                 }
               </button>
             </div>
           </div>
         </div>
 
-        {/* Episode grid */}
+        {/* ── Info bar below player ── */}
+        <div
+          className="glass mt-4 rounded-xl px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center gap-4"
+          style={{ borderColor: "var(--border-soft)" }}
+        >
+          {/* Title + episode */}
+          <div className="flex-1 min-w-0">
+            <p className="font-bold truncate" style={{ color: "var(--text-main)" }}>{anime.title}</p>
+            <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+              Episode {currentEp}{anime.duration ? ` · ${anime.duration}` : ""}
+            </p>
+          </div>
+
+          {/* Sub / Dub */}
+          {(anime.has_sub || anime.has_dub) && (
+            <div className="flex gap-2 shrink-0">
+              {anime.has_sub && (
+                <button
+                  onClick={() => setServer("sub")}
+                  className="text-xs font-bold px-3 py-1.5 rounded-lg transition-all"
+                  style={{
+                    background: server === "sub" ? "var(--accent-primary)" : "rgba(255,255,255,0.06)",
+                    color: server === "sub" ? "#000" : "var(--text-muted)",
+                    border: "1px solid var(--border-soft)",
+                  }}
+                >SUB</button>
+              )}
+              {anime.has_dub && (
+                <button
+                  onClick={() => setServer("dub")}
+                  className="text-xs font-bold px-3 py-1.5 rounded-lg transition-all"
+                  style={{
+                    background: server === "dub" ? "var(--accent-primary)" : "rgba(255,255,255,0.06)",
+                    color: server === "dub" ? "#000" : "var(--text-muted)",
+                    border: "1px solid var(--border-soft)",
+                  }}
+                >DUB</button>
+              )}
+            </div>
+          )}
+
+          {/* Prev / Next */}
+          <div className="flex gap-2 shrink-0">
+            <Button
+              variant="outline"
+              className="btn btn-secondary gap-1 text-xs"
+              disabled={currentEp <= 1}
+              onClick={() => goTo(currentEp - 1)}
+            >
+              <ChevronLeft className="w-3 h-3" /> Prev
+            </Button>
+            <Button
+              variant="outline"
+              className="btn btn-secondary gap-1 text-xs"
+              disabled={currentEp >= totalEps}
+              onClick={() => goTo(currentEp + 1)}
+            >
+              Next <ChevronRight className="w-3 h-3" />
+            </Button>
+          </div>
+
+          {/* Download */}
+          <a href={downloadSrc} target="_blank" rel="noreferrer" className="shrink-0">
+            <Button variant="outline" className="btn btn-secondary gap-2 text-xs">
+              <Download className="w-3 h-3" /> Download
+            </Button>
+          </a>
+        </div>
+
+        {/* ── Episode grid ── */}
         {totalEps > 0 && (
           <div className="mt-8">
             <h3 className="text-sm font-bold mb-3 uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
@@ -434,11 +418,3 @@ export default function Watch() {
     </div>
   );
 }
-
-const btnStyle: React.CSSProperties = {
-  width: 34, height: 34, borderRadius: "50%",
-  display: "flex", alignItems: "center", justifyContent: "center",
-  background: "transparent", border: "none", cursor: "pointer",
-  transition: "background 0.15s ease",
-  flexShrink: 0,
-};
