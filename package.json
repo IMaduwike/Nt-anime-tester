@@ -3,12 +3,8 @@
   "private": true,
   "type": "module",
   "pkg": {
-    "assets": [
-      "dist/spa/*"
-    ],
-    "scripts": [
-      "dist/server/**/*.js"
-    ]
+    "assets": ["dist/spa/*"],
+    "scripts": ["dist/server/**/*.js"]
   },
   "scripts": {
     "dev": "vite",
@@ -21,11 +17,13 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@vercel/analytics": "^1.5.0",
     "@vercel/node": "^3.1.0",
+    "@vercel/speed-insights": "^1.2.0",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
-    "zod": "^3.25.76",
-    "hls.js": "^1.6.15"
+    "hls.js": "^1.6.15",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@hookform/resolvers": "^5.2.1",
