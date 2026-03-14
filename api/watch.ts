@@ -3,13 +3,21 @@ import { VercelRequest, VercelResponse } from "@vercel/node";
 const API_BASE_URL = "https://nt-anime-api.onrender.com";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Route: /api/watch/[anime]/[episode]
-  // Vercel provides path segments via query when using file-based routing,
-  // but since we use vercel.json rewrites, params come through req.query.
   const { anime, episode, server } = req.query;
 
   console.log("[SERVER] Watch API endpoint invoked");
   console.log("[SERVER] Anime:", anime, "Episode:", episode, "Server:", server);
+
+  // CORS headers — required for hls.js to load the stream
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Range, Content-Type");
+  res.setHeader("Access-Control-Expose-Headers", "Content-Length, Content-Range");
+
+  if (req.method === "OPTIONS") {
+    res.status(204).end();
+    return;
+  }
 
   if (
     !anime || typeof anime !== "string" ||
