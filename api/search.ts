@@ -48,7 +48,7 @@ export default async function handler(
   }
 
   const encodedKeyword = encodeURIComponent(keyword);
-  const externalUrl = `https://nt-anime-api.onrender.com/search?keyword=${encodedKeyword}`;
+  const externalUrl = `https://neon-ai-anime-api.hf.space/search?keyword=${encodedKeyword}`;
 
   console.log("[SERVER] ============================================");
   console.log("[SERVER] External API Request Details:");
