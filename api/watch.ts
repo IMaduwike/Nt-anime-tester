@@ -16,7 +16,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // ── Proxy mode: /api/watch?url=<encoded url>
-  // Used for segment/playlist URLs that the backend already rewrote
   if (proxyUrl && typeof proxyUrl === "string") {
     const target = decodeURIComponent(proxyUrl);
     console.log("[SERVER] HLS proxy request:", target);
@@ -36,14 +35,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const isPlaylist = ct.includes("mpegurl") || target.includes(".m3u8");
 
       if (isPlaylist) {
-        // Rewrite playlist URLs to go back through this proxy
         const text = await upstream.text();
-        const base = target.substring(0, target.lastIndexOf("/") + 1);
         const host = `${req.headers["x-forwarded-proto"] || "https"}://${req.headers.host}`;
-        const rewritten = rewriteM3u8(text, base, host);
+        const rewritten = rewriteM3u8(text, target, host);
         res.status(200).send(rewritten);
       } else {
-        // Raw segment — pipe bytes through untouched
         res.status(upstream.status);
         const reader = upstream.body?.getReader();
         if (!reader) { res.end(); return; }
@@ -89,11 +85,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const text = await response.text();
     const host = `${req.headers["x-forwarded-proto"] || "https"}://${req.headers.host}`;
-
-    // Rewrite all URLs in the manifest to go through this proxy
-    // Base = the upstream URL's directory for resolving relative paths
-    const base = upstreamUrl.substring(0, upstreamUrl.lastIndexOf("/") + 1);
-    const rewritten = rewriteM3u8(text, base, host);
+    const rewritten = rewriteM3u8(text, upstreamUrl, host);
     res.status(200).send(rewritten);
   } catch (error) {
     console.error("[SERVER] Watch stream error:", error);
@@ -106,14 +98,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 }
 
-function rewriteM3u8(text: string, base: string, host: string): string {
+function rewriteM3u8(text: string, baseUrl: string, host: string): string {
+  // Parse origin and directory from the base URL
+  const parsed = new URL(baseUrl);
+  const origin = parsed.origin; // e.g. https://nt-anime-api.onrender.com
+  const dir = parsed.href.substring(0, parsed.href.lastIndexOf("/") + 1);
+
   return text
     .split("\n")
     .map((line) => {
       const trimmed = line.trim();
       if (!trimmed || trimmed.startsWith("#")) return line;
-      // Resolve to absolute URL if relative
-      const absolute = trimmed.startsWith("http") ? trimmed : base + trimmed;
+
+      let absolute: string;
+      if (trimmed.startsWith("http")) {
+        // Already absolute
+        absolute = trimmed;
+      } else if (trimmed.startsWith("/")) {
+        // Root-relative — prepend origin only
+        absolute = origin + trimmed;
+      } else {
+        // Directory-relative
+        absolute = dir + trimmed;
+      }
+
       return `${host}/api/watch?url=${encodeURIComponent(absolute)}`;
     })
     .join("\n");
