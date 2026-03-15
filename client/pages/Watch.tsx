@@ -28,6 +28,19 @@ const btnStyle: React.CSSProperties = {
   flexShrink: 0,
 };
 
+const animeFacts = [
+  "One Piece has been running since 1999 — over 1000 episodes 🏴‍☠️",
+  "Naruto ran for 15 years straight across two series 🍥",
+  "Attack on Titan's final season took 4 years to finish 👀",
+  "Jujutsu Kaisen became a top 10 anime in under a year ⚡",
+  "Dragon Ball Z first aired in 1989 — older than most of us 🐉",
+  "Fullmetal Alchemist: Brotherhood has a 9.1 on MAL 🔥",
+  "Demon Slayer's Mugen Train became the highest-grossing anime film 🎬",
+  "Hunter x Hunter has been on hiatus more than it's been running 💀",
+  "Steins;Gate has one of the most beloved stories in anime history ⏳",
+  "Vinland Saga won Best Drama at the Crunchyroll Anime Awards 🏆",
+];
+
 export default function Watch() {
   const { url, episode } = useParams<{ url: string; episode: string }>();
   const navigate = useNavigate();
@@ -50,8 +63,22 @@ export default function Watch() {
   const [buffered, setBuffered] = useState(0);
   const [seeking, setSeeking] = useState(false);
 
+  // Download modal state
+  const [downloading, setDownloading] = useState(false);
+  const [factIndex, setFactIndex] = useState(0);
+
   const currentEp = parseInt(episode || "1");
   const totalEps = parseInt(anime?.total_episodes || "0") || 0;
+
+  // Cycle facts while download modal is open
+  useEffect(() => {
+    if (!downloading) return;
+    setFactIndex(Math.floor(Math.random() * animeFacts.length));
+    const interval = setInterval(() => {
+      setFactIndex(i => (i + 1) % animeFacts.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [downloading]);
 
   useEffect(() => {
     if (!url) { navigate("/"); return; }
@@ -159,6 +186,20 @@ export default function Watch() {
     video.currentTime = ratio * duration;
   };
 
+  const handleDownload = () => {
+    setDownloading(true);
+    // Open download in new tab — browser handles it, modal keeps user informed
+    const a = document.createElement("a");
+    a.href = downloadSrc;
+    a.target = "_blank";
+    a.rel = "noreferrer";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    // Auto-dismiss after 90s max (ffmpeg should be done well before then)
+    setTimeout(() => setDownloading(false), 90000);
+  };
+
   const goTo = (ep: number) => navigate(`/anime/${url}/watch/${ep}`);
   const progressPct = duration ? (currentTime / duration) * 100 : 0;
   const bufferedPct = duration ? (buffered / duration) * 100 : 0;
@@ -180,6 +221,89 @@ export default function Watch() {
     <div className="min-h-screen" style={{ background: "var(--bg-main)", color: "var(--text-main)" }}>
       <div className="fixed inset-0 -z-50 space-bg opacity-40" />
       <Header />
+
+      {/* ── Download Loading Modal ── */}
+      {downloading && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ background: "rgba(0,0,0,0.85)", backdropFilter: "blur(10px)" }}
+        >
+          <div
+            className="glass rounded-2xl p-8 flex flex-col items-center gap-6 mx-4"
+            style={{ borderColor: "var(--border-soft)", maxWidth: 400, width: "100%" }}
+          >
+            {/* Spinning ring with NT logo */}
+            <div className="relative w-20 h-20 flex items-center justify-center">
+              <div
+                className="absolute inset-0 rounded-full animate-spin"
+                style={{
+                  border: "3px solid var(--border-soft)",
+                  borderTopColor: "var(--accent-primary)",
+                }}
+              />
+              <span className="text-lg font-bold" style={{ color: "var(--accent-primary)" }}>NT</span>
+            </div>
+
+            {/* Status text */}
+            <div className="text-center">
+              <p className="font-bold text-lg mb-1" style={{ color: "var(--text-main)" }}>
+                Preparing Your Download
+              </p>
+              <p className="text-sm mb-1" style={{ color: "var(--text-muted)" }}>
+                Converting stream to MP4...
+              </p>
+              <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                This usually takes 30–60 seconds. Don't close this tab.
+              </p>
+            </div>
+
+            {/* Indeterminate progress bar */}
+            <div
+              className="w-full rounded-full overflow-hidden"
+              style={{ height: 3, background: "var(--border-soft)" }}
+            >
+              <div
+                style={{
+                  height: "100%",
+                  width: "40%",
+                  borderRadius: 9999,
+                  background: "var(--accent-primary)",
+                  animation: "indeterminate 1.8s ease-in-out infinite",
+                }}
+              />
+            </div>
+
+            {/* Cycling anime fact */}
+            <div
+              className="rounded-xl px-4 py-3 text-center w-full"
+              style={{ background: "rgba(158,240,255,0.06)", border: "1px solid rgba(158,240,255,0.12)" }}
+            >
+              <p className="text-xs mb-2 font-semibold uppercase tracking-wider" style={{ color: "var(--accent-primary)" }}>
+                Did you know?
+              </p>
+              <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+                {animeFacts[factIndex]}
+              </p>
+            </div>
+
+            {/* Dismiss */}
+            <button
+              onClick={() => setDownloading(false)}
+              className="text-xs transition-opacity hover:opacity-70"
+              style={{ color: "var(--text-muted)" }}
+            >
+              Dismiss
+            </button>
+          </div>
+
+          <style>{`
+            @keyframes indeterminate {
+              0%   { transform: translateX(-200%); }
+              100% { transform: translateX(600%); }
+            }
+          `}</style>
+        </div>
+      )}
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 pb-16">
         <Link
@@ -212,7 +336,6 @@ export default function Watch() {
             style={{ cursor: "pointer", display: "block" }}
           />
 
-          {/* Centre play icon when paused */}
           {!playing && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div style={{
@@ -229,7 +352,6 @@ export default function Watch() {
             </div>
           )}
 
-          {/* Controls overlay — only play/pause, skip, time, mute, fullscreen */}
           <div style={{
             position: "absolute", inset: 0,
             opacity: showControls ? 1 : 0,
@@ -239,7 +361,6 @@ export default function Watch() {
             display: "flex", flexDirection: "column", justifyContent: "flex-end",
             padding: "0 16px 14px",
           }}>
-            {/* Progress bar */}
             <div
               ref={progressRef}
               onClick={handleProgressClick}
@@ -268,10 +389,7 @@ export default function Watch() {
               }} />
             </div>
 
-            {/* Controls row — minimal, just the essentials */}
             <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-
-              {/* Play/Pause */}
               <button onClick={togglePlay} style={btnStyle}>
                 {playing
                   ? <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
@@ -279,7 +397,6 @@ export default function Watch() {
                 }
               </button>
 
-              {/* Skip back 10s */}
               <button onClick={() => { if (videoRef.current) videoRef.current.currentTime = Math.max(0, currentTime - 10); }} style={btnStyle} title="Back 10s">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
                   <path d="M12.5 8c-2.65 0-5.05 1-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/>
@@ -287,7 +404,6 @@ export default function Watch() {
                 </svg>
               </button>
 
-              {/* Skip forward 10s */}
               <button onClick={() => { if (videoRef.current) videoRef.current.currentTime = Math.min(duration, currentTime + 10); }} style={btnStyle} title="Forward 10s">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
                   <path d="M11.5 8c2.65 0 5.05 1 6.9 2.6L22 7v9h-9l3.62-3.62C15.23 11.22 13.46 10.5 11.5 10.5c-3.54 0-6.55 2.31-7.6 5.5l-2.37-.78C2.92 11.03 6.85 8 11.5 8z"/>
@@ -295,7 +411,6 @@ export default function Watch() {
                 </svg>
               </button>
 
-              {/* Mute */}
               <button onClick={toggleMute} style={btnStyle}>
                 {muted
                   ? <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15" stroke="white" strokeWidth="2"/><line x1="17" y1="9" x2="23" y2="15" stroke="white" strokeWidth="2"/></svg>
@@ -303,14 +418,12 @@ export default function Watch() {
                 }
               </button>
 
-              {/* Time */}
               <span style={{ color: "rgba(255,255,255,0.8)", fontSize: 12, fontVariantNumeric: "tabular-nums", marginLeft: 4 }}>
                 {formatTime(currentTime)} / {formatTime(duration)}
               </span>
 
               <div style={{ flex: 1 }} />
 
-              {/* Fullscreen */}
               <button onClick={toggleFullscreen} style={btnStyle}>
                 {fullscreen
                   ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
@@ -326,7 +439,6 @@ export default function Watch() {
           className="glass mt-4 rounded-xl px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center gap-4"
           style={{ borderColor: "var(--border-soft)" }}
         >
-          {/* Title + episode */}
           <div className="flex-1 min-w-0">
             <p className="font-bold truncate" style={{ color: "var(--text-main)" }}>{anime.title}</p>
             <p className="text-sm" style={{ color: "var(--text-muted)" }}>
@@ -334,7 +446,6 @@ export default function Watch() {
             </p>
           </div>
 
-          {/* Sub / Dub */}
           {(anime.has_sub || anime.has_dub) && (
             <div className="flex gap-2 shrink-0">
               {anime.has_sub && (
@@ -362,7 +473,6 @@ export default function Watch() {
             </div>
           )}
 
-          {/* Prev / Next */}
           <div className="flex gap-2 shrink-0">
             <Button
               variant="outline"
@@ -382,12 +492,18 @@ export default function Watch() {
             </Button>
           </div>
 
-          {/* Download */}
-          <a href={downloadSrc} target="_blank" rel="noreferrer" className="shrink-0">
-            <Button variant="outline" className="btn btn-secondary gap-2 text-xs">
-              <Download className="w-3 h-3" /> Download
-            </Button>
-          </a>
+          {/* Download button */}
+          <Button
+            variant="outline"
+            className="btn btn-secondary gap-2 text-xs shrink-0"
+            onClick={handleDownload}
+            disabled={downloading}
+          >
+            {downloading
+              ? <><Loader2 className="w-3 h-3 animate-spin" /> Preparing...</>
+              : <><Download className="w-3 h-3" /> Download</>
+            }
+          </Button>
         </div>
 
         {/* ── Episode grid ── */}
