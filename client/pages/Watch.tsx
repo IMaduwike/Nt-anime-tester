@@ -311,10 +311,9 @@ export default function Watch() {
       hlsRef.current = hls;
       hls.loadSource(videoSrc);
       hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED, () => { video.play().catch(() => {}); });
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {});
     } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = videoSrc;
-      video.play().catch(() => {});
     }
     return () => { hlsRef.current?.destroy(); hlsRef.current = null; };
   }, [url, currentEp, server, anime]);
