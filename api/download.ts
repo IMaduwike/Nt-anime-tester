@@ -2,6 +2,12 @@ import { VercelRequest, VercelResponse } from "@vercel/node";
 
 const API_BASE_URL = "https://neon-ai-anime-api.hf.space";
 
+function noCache(res: VercelResponse) {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // ── STEP 1: Start job ────────────────────────────────────────────────────
@@ -27,6 +33,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       const data = await r.json() as { token: string };
+      noCache(res);
       return res.status(200).json(data);
     } catch (err) {
       return res.status(500).json({ error: "Failed to reach download server" });
@@ -42,8 +49,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (action === "status" && token && typeof token === "string") {
       try {
         const r = await fetch(`${API_BASE_URL}/download-status/${token}`);
-        if (!r.ok) return res.status(r.status).json({ error: "Status check failed" });
+        if (!r.ok) {
+          noCache(res);
+          return res.status(r.status).json({ error: "Status check failed" });
+        }
         const data = await r.json();
+        noCache(res);
         return res.status(200).json(data);
       } catch (err) {
         return res.status(500).json({ error: "Failed to check status" });
@@ -55,6 +66,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Redirects to single-use HF Space URL
     // Token is consumed on first use — useless if someone copies it after
     if (action === "file" && token && typeof token === "string") {
+      noCache(res);
       return res.redirect(302, `${API_BASE_URL}/get-download/${token}`);
     }
 
