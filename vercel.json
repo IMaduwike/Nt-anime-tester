@@ -6,7 +6,7 @@
     { "src": "/api/trending", "dest": "/api/trending" },
     { "src": "/api/metadata", "dest": "/api/metadata" },
     { "src": "/api/watch/([^/]+)/([^/]+)", "dest": "/api/watch?anime=$1&episode=$2" },
-    { "src": "/api/download/([^/]+)/([^/]+)", "dest": "/api/download?anime=$1&episode=$2" },
+    { "src": "/api/download(.*)", "dest": "/api/download" },
     { "src": "/assets/(.*)", "dest": "/assets/$1" },
     { "src": "/(.*\\.\\w+)$", "dest": "/$1" },
     { "src": "/(.*)", "dest": "/index.html" }
