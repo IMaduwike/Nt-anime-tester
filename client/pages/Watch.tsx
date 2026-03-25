@@ -27,7 +27,7 @@ interface DownloadJob {
 
 // ── Cookie helpers ─────────────────────────────────────────────────────────
 const COOKIE_NAME = "nt_dl_job";
-const COOKIE_MAX_AGE = 30 * 60; // 30 minutes — matches server expiry
+const COOKIE_MAX_AGE = 60 * 60; // 30 minutes — matches server expiry
 
 function setCookie(data: object) {
   const value = encodeURIComponent(JSON.stringify(data));
