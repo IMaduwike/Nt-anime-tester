@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import Hls from "hls.js";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, Download, ChevronLeft, ChevronRight, CheckCircle, XCircle } from "lucide-react";
+import { Loader2, ArrowLeft, Download, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface AnimeMetadata {
   title: string;
@@ -27,7 +27,7 @@ interface DownloadJob {
 
 // ── Cookie helpers ─────────────────────────────────────────────────────────
 const COOKIE_NAME = "nt_dl_job";
-const COOKIE_MAX_AGE = 60 * 60; // 30 minutes — matches server expiry
+const COOKIE_MAX_AGE = 60 * 60; // 60 minutes — matches server expiry
 
 function setCookie(data: object) {
   const value = encodeURIComponent(JSON.stringify(data));
@@ -48,7 +48,7 @@ function clearCookie() {
   document.cookie = `${COOKIE_NAME}=; path=/; max-age=0`;
 }
 
-// ── Notification helpers ───────────────────────────────────────────────────
+// ── Phone/system notification helpers ─────────────────────────────────────
 async function requestNotificationPermission(): Promise<boolean> {
   if (!("Notification" in window)) return false;
   if (Notification.permission === "granted") return true;
@@ -57,10 +57,19 @@ async function requestNotificationPermission(): Promise<boolean> {
   return result === "granted";
 }
 
-function sendNotification(title: string, body: string) {
+function sendPhoneNotification(title: string, body: string) {
   if (!("Notification" in window) || Notification.permission !== "granted") return;
-  const n = new Notification(title, { body, icon: "/favicon.ico", badge: "/favicon.ico" });
-  setTimeout(() => n.close(), 6000);
+  try {
+    const n = new Notification(title, {
+      body,
+      icon: "/favicon.ico",
+      badge: "/favicon.ico",
+      tag: "nt-download",         // replaces previous notification instead of stacking
+      renotify: true,              // vibrate/sound even if same tag
+    });
+    n.onclick = () => { window.focus(); n.close(); };
+    setTimeout(() => n.close(), 8000);
+  } catch {}
 }
 
 function formatTime(s: number) {
@@ -117,21 +126,11 @@ export default function Watch() {
   const [showModal, setShowModal] = useState(false);
   const [factIndex, setFactIndex] = useState(0);
 
-  const [notifications, setNotifications] = useState<Array<{
-    id: string;
-    type: "success" | "error";
-    message: string;
-    time: Date;
-    read: boolean;
-  }>>([]);
-  const [showNotifications, setShowNotifications] = useState(false);
-
   const currentEp = parseInt(episode || "1");
   const totalEps = parseInt(anime?.total_episodes || "0") || 0;
-  const unreadCount = notifications.filter(n => !n.read).length;
   const isDownloading = downloadJob !== null;
 
-  // Cycle facts while modal is open
+  // Cycle facts while modal open
   useEffect(() => {
     if (!showModal) return;
     setFactIndex(Math.floor(Math.random() * animeFacts.length));
@@ -139,20 +138,11 @@ export default function Watch() {
     return () => clearInterval(interval);
   }, [showModal]);
 
-  const addNotification = useCallback((type: "success" | "error", message: string) => {
-    setNotifications(prev => [{
-      id: crypto.randomUUID(), type, message, time: new Date(), read: false,
-    }, ...prev]);
-  }, []);
-
   // ── Trigger the actual browser file download ───────────────────────────
-  const triggerFileDownload = useCallback((token: string, filename: string) => {
-    const a = document.createElement("a");
-    a.href = `/api/download?action=file&token=${token}`;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+  const triggerFileDownload = useCallback((token: string) => {
+    // window.open is the most reliable cross-browser/mobile way to trigger
+    // a file download without needing a direct user gesture on the element
+    window.open(`/api/download?action=file&token=${token}`, "_blank");
   }, []);
 
   // ── Poll download status ───────────────────────────────────────────────
@@ -161,33 +151,39 @@ export default function Watch() {
 
     pollRef.current = setInterval(async () => {
       try {
-        const r = await fetch(`/api/download?action=status&token=${token}`);
+        const r = await fetch(`/api/download?action=status&token=${token}`, {
+          cache: "no-store",
+          headers: { "Cache-Control": "no-cache" },
+        });
 
-        // 404 means job expired on server — clear cookie and stop
         if (r.status === 404) {
           clearInterval(pollRef.current!);
           clearCookie();
           setDownloadJob(null);
           setShowModal(false);
-          addNotification("error", `Download job for ${animeTitle} EP${ep} expired`);
+          sendPhoneNotification("Download Expired ⏰", `${animeTitle} EP${ep} job expired before it could be claimed`);
           return;
         }
 
-        if (!r.ok) return; // temporary error, keep polling
+        if (!r.ok) return;
 
         const data = await r.json() as { status: string; filename: string };
 
         if (data.status === "ready") {
           clearInterval(pollRef.current!);
-          clearCookie(); // job complete — remove cookie
+          clearCookie();
 
           setDownloadJob(prev => prev ? { ...prev, status: "ready", filename: data.filename } : null);
           setShowModal(false);
 
-          triggerFileDownload(token, data.filename);
+          // Trigger the file download
+          triggerFileDownload(token);
 
-          sendNotification("Download Ready! 🎉", `${animeTitle} Episode ${ep} is downloading now`);
-          addNotification("success", `${animeTitle} EP${ep} download started`);
+          // Phone/system notification
+          sendPhoneNotification(
+            "Download Ready! 🎉",
+            `${animeTitle} Episode ${ep} — tap to open`
+          );
 
           setTimeout(() => setDownloadJob(null), 3000);
 
@@ -198,27 +194,23 @@ export default function Watch() {
           setDownloadJob(prev => prev ? { ...prev, status: "failed" } : null);
           setShowModal(false);
 
-          sendNotification("Download Failed 😞", `${animeTitle} Episode ${ep} could not be downloaded`);
-          addNotification("error", `${animeTitle} EP${ep} download failed`);
+          sendPhoneNotification("Download Failed 😞", `${animeTitle} Episode ${ep} could not be converted`);
 
           setTimeout(() => setDownloadJob(null), 3000);
         }
-        // still "processing" — keep polling
       } catch {
         // network blip — keep polling silently
       }
     }, 3000);
-  }, [addNotification, triggerFileDownload]);
+  }, [triggerFileDownload]);
 
-  // ── On mount: check cookie for a pending job ───────────────────────────
-  // This is what survives tab close/refresh
+  // ── On mount: resume job from cookie if present ───────────────────────
   useEffect(() => {
     const saved = getCookie();
     if (!saved) return;
 
     const ageMs = Date.now() - saved.startedAt;
-    if (ageMs > 15 * 60 * 1000) {
-      // Cookie survived but job is definitely expired on server
+    if (ageMs > 60 * 60 * 1000) {
       clearCookie();
       return;
     }
@@ -233,34 +225,24 @@ export default function Watch() {
       episode: saved.episode,
     });
 
-    // Show a subtle toast rather than the full modal on resume
-    addNotification("success", `Resuming download: ${saved.animeTitle} EP${saved.episode}`);
-
-    // Resume polling
     startPolling(saved.token, saved.animeTitle, saved.episode);
-  }, []); // empty deps — runs once on mount only
+  }, []);
 
   // ── Handle download button click ──────────────────────────────────────
   const handleDownload = async () => {
     if (downloadJob) {
-      // Already in progress — just show the modal
       setShowModal(true);
       return;
     }
 
+    // Request phone notification permission on first download
     await requestNotificationPermission();
 
     const animeTitle = anime?.title || url || "";
     const animeSlug = url || "";
 
     setShowModal(true);
-    setDownloadJob({
-      token: "",
-      status: "starting",
-      animeTitle,
-      animeSlug,
-      episode: currentEp,
-    });
+    setDownloadJob({ token: "", status: "starting", animeTitle, animeSlug, episode: currentEp });
 
     try {
       const r = await fetch("/api/download", {
@@ -273,18 +255,16 @@ export default function Watch() {
 
       const { token } = await r.json() as { token: string };
 
-      // Save to cookie immediately — survives tab close from this point
+      // Save to cookie — job survives tab close
       setCookie({ token, animeTitle, animeSlug, episode: currentEp, startedAt: Date.now() });
 
       setDownloadJob(prev => prev ? { ...prev, token, status: "processing" } : null);
-
       startPolling(token, animeTitle, currentEp);
 
     } catch {
       clearCookie();
       setDownloadJob(null);
       setShowModal(false);
-      addNotification("error", `Failed to start download for EP${currentEp}`);
     }
   };
 
@@ -311,7 +291,7 @@ export default function Watch() {
       hlsRef.current = hls;
       hls.loadSource(videoSrc);
       hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {});
+      // No autoplay — user must press play
     } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = videoSrc;
     }
@@ -408,16 +388,13 @@ export default function Watch() {
       <div className="fixed inset-0 -z-50 space-bg opacity-40" />
       <Header />
 
-      {/* ── Download Modal ── */}
+      {/* ── Download Loading Modal ── */}
       {showModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center"
-          style={{ background: "rgba(0,0,0,0.85)", backdropFilter: "blur(10px)" }}
-        >
-          <div
-            className="glass rounded-2xl p-8 flex flex-col items-center gap-6 mx-4"
-            style={{ borderColor: "var(--border-soft)", maxWidth: 400, width: "100%" }}
-          >
+        <div className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ background: "rgba(0,0,0,0.85)", backdropFilter: "blur(10px)" }}>
+          <div className="glass rounded-2xl p-8 flex flex-col items-center gap-6 mx-4"
+            style={{ borderColor: "var(--border-soft)", maxWidth: 400, width: "100%" }}>
+
             <div className="relative w-20 h-20 flex items-center justify-center">
               <div className="absolute inset-0 rounded-full animate-spin"
                 style={{ border: "3px solid var(--border-soft)", borderTopColor: "var(--accent-primary)" }} />
@@ -432,7 +409,7 @@ export default function Watch() {
                 {downloadJob?.animeTitle} · Episode {downloadJob?.episode}
               </p>
               <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                Converting stream to MP4. Takes 30–60 seconds.
+                Converting to MP4 — takes 3–5 mins. You'll get a notification when ready.
               </p>
             </div>
 
@@ -444,17 +421,14 @@ export default function Watch() {
               }} />
             </div>
 
-            <div
-              className="rounded-xl px-4 py-3 text-center w-full"
-              style={{ background: "rgba(158,240,255,0.06)", border: "1px solid rgba(158,240,255,0.12)" }}
-            >
+            <div className="rounded-xl px-4 py-3 text-center w-full"
+              style={{ background: "rgba(158,240,255,0.06)", border: "1px solid rgba(158,240,255,0.12)" }}>
               <p className="text-xs mb-2 font-semibold uppercase tracking-wider" style={{ color: "var(--accent-primary)" }}>
                 Did you know?
               </p>
               <p className="text-sm" style={{ color: "var(--text-muted)" }}>{animeFacts[factIndex]}</p>
             </div>
 
-            {/* Cookie notice */}
             <div className="flex items-center gap-2 text-xs" style={{ color: "var(--text-muted)" }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
@@ -462,12 +436,10 @@ export default function Watch() {
               Job saved — safe to close this tab
             </div>
 
-            <button
-              onClick={() => setShowModal(false)}
+            <button onClick={() => setShowModal(false)}
               className="text-xs transition-opacity hover:opacity-70"
-              style={{ color: "var(--text-muted)" }}
-            >
-              Hide — download continues in background
+              style={{ color: "var(--text-muted)" }}>
+              Hide — you'll be notified when ready
             </button>
           </div>
 
@@ -480,105 +452,23 @@ export default function Watch() {
         </div>
       )}
 
-      {/* ── Notifications Panel ── */}
-      {showNotifications && (
-        <div
-          className="fixed top-20 right-4 z-40 glass rounded-2xl overflow-hidden"
-          style={{ borderColor: "var(--border-soft)", width: 320, maxHeight: 400 }}
-        >
-          <div className="flex items-center justify-between px-4 py-3"
-            style={{ borderBottom: "1px solid var(--border-soft)" }}>
-            <p className="text-sm font-bold" style={{ color: "var(--text-main)" }}>Notifications</p>
-            <div className="flex gap-3 items-center">
-              {notifications.length > 0 && (
-                <button onClick={() => setNotifications([])}
-                  className="text-xs hover:opacity-70" style={{ color: "var(--text-muted)" }}>
-                  Clear all
-                </button>
-              )}
-              <button onClick={() => setShowNotifications(false)}
-                className="text-xs hover:opacity-70" style={{ color: "var(--text-muted)" }}>✕</button>
-            </div>
-          </div>
-          <div className="overflow-y-auto" style={{ maxHeight: 340 }}>
-            {notifications.length === 0 ? (
-              <div className="px-4 py-8 text-center">
-                <p className="text-sm" style={{ color: "var(--text-muted)" }}>No notifications yet</p>
-              </div>
-            ) : notifications.map(n => (
-              <div
-                key={n.id}
-                className="flex items-start gap-3 px-4 py-3 cursor-pointer"
-                style={{
-                  borderBottom: "1px solid var(--border-soft)",
-                  background: n.read ? "transparent" : "rgba(158,240,255,0.04)",
-                }}
-                onClick={() => setNotifications(prev => prev.map(x => x.id === n.id ? { ...x, read: true } : x))}
-              >
-                {n.type === "success"
-                  ? <CheckCircle className="w-4 h-4 mt-0.5 shrink-0" style={{ color: "#4ade80" }} />
-                  : <XCircle className="w-4 h-4 mt-0.5 shrink-0" style={{ color: "#f87171" }} />
-                }
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm" style={{ color: "var(--text-main)" }}>{n.message}</p>
-                  <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
-                    {n.time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                  </p>
-                </div>
-                {!n.read && (
-                  <div className="w-2 h-2 rounded-full shrink-0 mt-1.5"
-                    style={{ background: "var(--accent-primary)" }} />
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 pb-16">
 
-        {/* Top bar */}
-        <div className="flex items-center justify-between mb-4">
-          <Link to={`/anime/${url}`}
-            className="inline-flex items-center gap-2 text-sm hover:opacity-80 transition-opacity"
-            style={{ color: "var(--text-muted)" }}>
-            <ArrowLeft className="w-4 h-4" />
-            Back to {anime.title}
-          </Link>
+        <Link to={`/anime/${url}`}
+          className="inline-flex items-center gap-2 text-sm mb-4 hover:opacity-80 transition-opacity"
+          style={{ color: "var(--text-muted)" }}>
+          <ArrowLeft className="w-4 h-4" />
+          Back to {anime.title}
+        </Link>
 
-          {/* Notification bell */}
-          <button
-            onClick={() => {
-              setShowNotifications(v => !v);
-              if (!showNotifications) setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-            }}
-            className="relative p-2 rounded-xl hover:opacity-80 transition-opacity"
-            style={{ background: "rgba(255,255,255,0.05)" }}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-              style={{ color: "var(--text-main)" }}>
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-            </svg>
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center"
-                style={{ background: "var(--accent-primary)", color: "#000" }}>
-                {unreadCount > 9 ? "9+" : unreadCount}
-              </span>
-            )}
-          </button>
-        </div>
-
-        {/* ── Resumed job banner ── */}
+        {/* Resumed job banner */}
         {isDownloading && !showModal && (
-          <div
-            className="mb-4 rounded-xl px-4 py-3 flex items-center justify-between gap-4"
-            style={{ background: "rgba(158,240,255,0.06)", border: "1px solid rgba(158,240,255,0.2)" }}
-          >
+          <div className="mb-4 rounded-xl px-4 py-3 flex items-center justify-between gap-4"
+            style={{ background: "rgba(158,240,255,0.06)", border: "1px solid rgba(158,240,255,0.2)" }}>
             <div className="flex items-center gap-3">
               <Loader2 className="w-4 h-4 animate-spin shrink-0" style={{ color: "var(--accent-primary)" }} />
               <p className="text-sm" style={{ color: "var(--text-main)" }}>
-                Preparing download: <span className="font-semibold">{downloadJob?.animeTitle} EP{downloadJob?.episode}</span>
+                Preparing: <span className="font-semibold">{downloadJob?.animeTitle} EP{downloadJob?.episode}</span>
               </p>
             </div>
             <button onClick={() => setShowModal(true)}
@@ -589,14 +479,13 @@ export default function Watch() {
         )}
 
         {/* ── Video Player ── */}
-        <div
-          ref={containerRef}
+        <div ref={containerRef}
           className="relative w-full overflow-hidden select-none"
           style={{ background: "#000", borderRadius: "16px", aspectRatio: "16/9", boxShadow: "0 8px 40px rgba(0,0,0,0.6)" }}
           onMouseMove={resetControlsTimer}
           onMouseLeave={() => playing && setShowControls(false)}
-          onMouseEnter={() => setShowControls(true)}
-        >
+          onMouseEnter={() => setShowControls(true)}>
+
           <video ref={videoRef} className="w-full h-full object-contain"
             onClick={togglePlay} style={{ cursor: "pointer", display: "block" }} />
 
