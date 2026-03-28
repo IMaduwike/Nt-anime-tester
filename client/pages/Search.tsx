@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
@@ -25,48 +25,48 @@ export default function Search() {
   const [hasSearched, setHasSearched] = useState(!!searchParams.get("q"));
 
   useEffect(() => {
-    const fetchTrending = async () => {
-      console.log("[SEARCH] Fetching trending anime...");
-      try {
-        const response = await fetch("/api/trending");
-        console.log("[SEARCH] Trending response status:", response.status);
-        const data = await response.json();
-        setTrending(data.results || []);
-      } catch (error) {
-        console.error("[SEARCH] Failed to fetch trending anime:", error);
-      }
-    };
-    fetchTrending();
-  }, []);
+  const fetchTrending = async () => {
+    try {
+      const response = await fetch("/api/trending");
+      const data = await response.json();
+      setTrending(data.results || []);
+    } catch (error) {
+      console.error("[SEARCH] Failed to fetch trending:", error);
+    }
+  };
+  fetchTrending();
+}, []);
 
   useEffect(() => {
-    const query = searchParams.get("q");
-    if (query) {
-      setSearchQuery(query);
-      performSearch(query);
-    }
-  }, [searchParams]);
+  const query = searchParams.get("q");
+  if (query) {
+    setSearchQuery(query);
+    performSearch(query);
+  }
+}, [searchParams, performSearch]);
 
-  const performSearch = async (query: string) => {
-    if (!query.trim()) { setResults([]); return; }
-    setLoading(true);
-    try {
-      const response = await fetch(`/api/search?keyword=${encodeURIComponent(query)}`);
-      const data = await response.json();
-      setResults(data.results || []);
-      setHasSearched(true);
-    } catch (error) {
-      console.error("[SEARCH] Search failed:", error);
-      setResults([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const performSearch = useCallback(async (query: string) => {
+  if (!query.trim()) { setResults([]); return; }
+  setLoading(true);
+  try {
+    const response = await fetch(`/api/search?keyword=${encodeURIComponent(query)}`);
+    const data = await response.json();
+    setResults(data.results || []);
+    setHasSearched(true);
+  } catch (error) {
+    console.error("[SEARCH] Search failed:", error);
+    setResults([]);
+  } finally {
+    setLoading(false);
+  }
+}, []);
 
   const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) setSearchParams({ q: searchQuery });
-  };
+  e.preventDefault();
+  if (!searchQuery.trim()) return;
+  setSearchParams({ q: searchQuery });
+  performSearch(searchQuery);
+};
 
   const handleClearSearch = () => {
     setSearchQuery("");
